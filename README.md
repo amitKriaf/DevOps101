@@ -1,6 +1,6 @@
 # The Practitioner's Field Manual to DevOps
 
-A daily-reader style DevOps learning site — 25 chapters across 6 parts, quizzes, and a rotating dictionary. Warm-paper aesthetic, sage-green accent, works in light and dark themes. All state is local; no accounts, no tracking, no server.
+A daily-reader style DevOps learning site — **30 chapters across 7 parts**, quizzes, and a rotating dictionary. Warm-paper aesthetic, sage-green accent, works in light and dark themes. All state is local; no accounts, no tracking, no server.
 
 Made to be read a page at a time, not consumed as a syllabus.
 
@@ -18,16 +18,17 @@ That's the whole install. Everything is static: five files loaded from the same 
 
 ## What's in it
 
-**25 chapters, six parts:**
+**30 chapters, seven parts:**
 
 | Part | Chapters |
 | --- | --- |
 | I — The Foundations | 01 CI/CD · 02 Docker · 03 Linux · 04 Packages |
-| II — Networking & Traffic | 05 DNS · 06 Nginx · 07 TLS · 08 VPN/BGP |
-| III — Orchestration & GitOps | 09 Kubernetes · 10 Helm · 11 ArgoCD · 12 Service Mesh · 13 Git |
-| IV — Infrastructure & Cloud | 14 Terraform · 15 Ansible · 16 Cloud · 17 RBAC/IAM |
-| V — Data, Ops & Security | 18 Databases · 19 Monitoring · 20 Queues · 21 Caching · 22 Secrets · 23 WAF · 24 APIs |
-| VI — AI Interfaces | 25 MCP |
+| II — Networking & Access | 05 DNS · 06 Nginx · 07 TLS · 08 VPN/BGP · 09 Bastion & Jump Access |
+| III — Orchestration & GitOps | 10 Kubernetes · 11 Helm · 12 ArgoCD · 13 Git · 14 Service Mesh |
+| IV — Infrastructure & Cloud | 15 Terraform · 16 Ansible · 17 Cloud · 18 RBAC/IAM |
+| V — Data, Applications & Security | 19 Databases · 20 Queues · 21 Caching · 22 Secrets · 23 WAF · 24 APIs · 25 Design Patterns |
+| VI — Observability | 26 Metrics & Prometheus · 27 Logs & Loki · 28 Traces & OpenTelemetry · 29 Grafana, Alloy & Alerting |
+| VII — AI Interfaces | 30 MCP |
 
 Each chapter has an introduction, 8–13 core concepts, an in-practice code example, and an examination (5–6 multiple-choice questions with explanations).
 

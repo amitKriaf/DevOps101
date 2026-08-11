@@ -1,11 +1,12 @@
   // ---------- Content ----------
   const PARTS = [
-    { roman: 'I',   title: 'The Foundations',           desc: 'Daily bread — code, containers, the shell, the packages beneath it all.' },
-    { roman: 'II',  title: 'Networking & Traffic',      desc: 'How requests actually find your server, and what sits in front of it.' },
-    { roman: 'III', title: 'Orchestration & GitOps',    desc: 'Running many things reliably; declaring what you want, letting a controller keep it true.' },
-    { roman: 'IV',  title: 'Infrastructure & Cloud',    desc: 'Provisioning the ground you deploy onto — declaratively, from code.' },
-    { roman: 'V',   title: 'Data, Operations & Security', desc: 'The database, the dashboards, the firewalls, the identities.' },
-    { roman: 'VI',  title: 'Applications & AI Interfaces', desc: 'The contracts your applications speak — HTTP, SSE, and the newer LLM ones.' },
+    { roman: 'I',   title: 'The Foundations',              desc: 'Daily bread — code, containers, the shell, the packages beneath it all.' },
+    { roman: 'II',  title: 'Networking & Access',          desc: 'How requests reach your server, what sits in front of it, and how humans get in.' },
+    { roman: 'III', title: 'Orchestration & GitOps',       desc: 'Running many things reliably; declaring what you want, letting a controller keep it true.' },
+    { roman: 'IV',  title: 'Infrastructure & Cloud',       desc: 'Provisioning the ground you deploy onto — declaratively, from code.' },
+    { roman: 'V',   title: 'Data, Applications & Security', desc: 'Databases, queues, caches, APIs, secrets, firewalls — and the patterns that hold them together.' },
+    { roman: 'VI',  title: 'Observability',                desc: 'Metrics, logs, traces, dashboards, alerts — knowing what your systems are doing.' },
+    { roman: 'VII', title: 'AI Interfaces',                desc: 'How LLM agents talk to your systems — the newest protocol layer.' },
   ];
 
   const TOPICS = [
@@ -248,7 +249,7 @@ $ docker image prune -a                        <span class="c"># reclaim disk fr
     {
       id: 'k8s',
       part: 2,
-      num: '09',
+      num: '10',
       title: 'Kubernetes',
       tag: 'A control loop keeping declared state and reality in agreement — pods, labels, probes, and thirteen objects you\'ll actually use.',
       intro: `Kubernetes is a container orchestrator built on one idea: you <em>declare</em> what you want (three replicas of this image, exposed on port 80, with these resource limits, matching these labels) and a control loop keeps reality in agreement — forever. You never tell it <em>how</em> to schedule pods, replace failed ones, or route traffic; you tell it the target, and it converges.
@@ -384,7 +385,7 @@ $ kubectl port-forward svc/api 8080:80 -n prod        <span class="c"># local ac
     {
       id: 'helm',
       part: 2,
-      num: '10',
+      num: '11',
       title: 'Helm',
       tag: 'The package manager for Kubernetes — templated manifests, values files, releases, rollbacks, dependencies.',
       intro: `Kubernetes manifests are verbose and repetitive across environments — the same Deployment in dev, staging, and prod differs only in a handful of values (replicas, image tag, resources, ingress host). Helm bundles the manifests into a <em>chart</em>: a directory of Go-templated YAML plus a defaults file, packageable as a tarball. Users install a chart with their own <em>values</em>, and the whole bundle is managed as a single unit called a <em>release</em>.
@@ -521,7 +522,7 @@ $ helm test api                                     <span class="c"># run test h
     {
       id: 'terraform',
       part: 3,
-      num: '14',
+      num: '15',
       title: 'Terraform',
       tag: 'Describe the infrastructure you want; a plan tells you how to get there — providers, state, modules, workspaces, drift.',
       intro: `Terraform is HashiCorp's language and engine for provisioning infrastructure declaratively. You write <code>.tf</code> files in HCL, run <code>terraform plan</code> to see what will change, and <code>terraform apply</code> to make it so. The scope is broader than Kubernetes — Terraform provisions the cluster itself, the VPC around it, the DNS zone in front, the S3 buckets it uses, the IAM roles that let it authenticate.
@@ -651,7 +652,7 @@ $ terraform apply -replace=aws_instance.web              <span class="c"># force
     {
       id: 'ansible',
       part: 3,
-      num: '15',
+      num: '16',
       title: 'Ansible',
       tag: 'Configuration management, agentless and stateless — SSH, YAML, and modules that check before they act.',
       intro: `Ansible describes how you want a set of machines to be configured — packages installed, files rendered, services running, users created — in ordinary YAML, then makes each machine match by connecting over SSH and running Python modules on the far side. There is no daemon to install on the target, and no database keeping track of state.
@@ -783,7 +784,7 @@ $ ansible web -i inventory/prod.yml -m ping    <span class="c"># ad-hoc: are the
     {
       id: 'argocd',
       part: 2,
-      num: '11',
+      num: '12',
       title: 'ArgoCD & GitOps',
       tag: 'Git holds desired state; a controller keeps the cluster in agreement — drift, sync waves, App of Apps, ApplicationSets.',
       intro: `GitOps takes CI/CD\'s "declarative pipeline" idea to its logical end: the desired state of your infrastructure lives in a Git repository, and a controller inside the cluster continuously reconciles the running cluster to match. If Git says three replicas, three replicas there will be — and if someone edits the Deployment by hand, ArgoCD will notice the drift and (with self-heal) revert it.
@@ -903,25 +904,27 @@ ArgoCD is the most-used implementation for Kubernetes; <em>Flux</em> is the othe
 
     {
       id: 'monitoring',
-      part: 4,
-      num: '19',
-      title: 'Monitoring & Observability',
-      tag: 'Metrics, logs, traces — the three pillars — plus SLOs, alerting, and the discipline of asking "why?"',
-      intro: `Monitoring answers <em>is the system healthy right now?</em>; observability answers <em>why is it behaving that way, including in situations I did not predict?</em> The distinction blurs in practice, and the same three signals underlie both: <em>metrics</em> (numbers over time), <em>logs</em> (discrete events with context), and <em>traces</em> (the path a single request took across services).
-The reference open-source stack in 2026 is <em>Prometheus</em> for metrics, <em>Grafana</em> for dashboards, <em>Loki</em> for logs, <em>Tempo</em> or <em>Jaeger</em> for traces, <em>Alertmanager</em> for routing alerts, <em>OpenTelemetry</em> as the vendor-neutral instrumentation SDK feeding into any of them. Managed alternatives (Datadog, New Relic, Honeycomb, Grafana Cloud) do the same job with less operational work.`,
+      part: 5,
+      num: '26',
+      title: 'Metrics & Prometheus',
+      tag: 'Time series, PromQL, exporters, cardinality, SLOs, alerting — the metrics half of observability.',
+      intro: `<em>Metrics</em> are numbers over time — cheap to store at scale, ideal for alerting, indispensable for capacity and cost analysis. This chapter focuses on the metrics pillar and the reference implementation nearly everyone runs: <em>Prometheus</em>. Logs live in [[logs]]; traces live in [[traces]]; the dashboarding and alerting layer that ties them all together lives in [[grafana]].
+Prometheus’s essential design choices are simple and durable: <em>pull-based</em> scraping of <code>/metrics</code> endpoints, a small set of metric types, labels as multi-dimensional keys, a functional query language (<em>PromQL</em>). Every managed offering — Grafana Mimir, Cortex, Thanos, VictoriaMetrics, GCP Managed Prometheus, AWS Managed Prometheus, Datadog’s Prom-compatible endpoint — respects that shape.`,
       concepts: [
-        ['Metrics', "Time series of numbers, cheap to store at scale. Request rate, error rate, latency percentiles, CPU, memory, queue depth. Great for alerting (a threshold you cross, a rate that changes). Poor for high-cardinality debugging (metrics have a small number of label combinations before they blow up)."],
-        ['Logs', "Discrete events with context. <em>Structured</em> logs (JSON) are queryable — every field is indexable. <em>Unstructured</em> logs are grep material. Store in Loki (log-scale cheap), Elastic (full-text search), or an APM/SIEM. Sample or drop debug logs in production; keep INFO+ retained; retain WARN/ERROR longer."],
-        ['Traces & spans', "A <em>trace</em> is a single request’s journey across services. A <em>span</em> is one unit of work inside it — a service, an operation, a duration, some attributes, and a parent span ID. Traces reveal <em>where</em> latency is spent when a request touches 15 services."],
-        ['OpenTelemetry (OTel)', "The vendor-neutral standard for instrumentation. Language SDKs emit metrics, logs, and traces via the OTLP protocol. Send OTLP to any backend (Prometheus, Tempo, Datadog, Honeycomb) — no vendor lock-in. Instrument once; switch backends later."],
-        ['PromQL', "Prometheus’s functional query language over time series. <code>rate(http_requests_total[5m])</code>, <code>sum by (service) (rate(...))</code>, <code>histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service))</code>. Learn <code>rate</code>, <code>sum by</code>, <code>histogram_quantile</code>, and you’re 80% there."],
-        ['Pull vs push', "Prometheus <em>pulls</em>: it scrapes <code>/metrics</code> endpoints on a schedule (usually 15–30s). Applications and exporters (node-exporter, kube-state-metrics, blackbox-exporter) expose the endpoint. <em>Pushgateway</em> is the exception for short-lived batch jobs. Push-based alternatives: StatsD, OpenTelemetry OTLP."],
-        ['Cardinality', "Every unique combination of label values is a distinct time series. High-cardinality labels (user IDs, request IDs) explode Prometheus. Keep label sets small; use logs and traces for per-request context."],
-        ['SLI, SLO, SLA', "<em>SLI</em>: the measurement — “% of requests completing in under 200ms.” <em>SLO</em>: the internal target — “99.9% of requests under 200ms over 30 days.” <em>SLA</em>: the external contract with penalties. Alert on <em>SLO burn rate</em>, not raw thresholds — burning 30 days of error budget in 1 hour is more urgent than the same rate spread over a week."],
-        ['Golden signals', "Google SRE’s four: <em>traffic</em>, <em>errors</em>, <em>latency</em>, <em>saturation</em>. RED (Rate, Errors, Duration) is the request-oriented sibling. USE (Utilisation, Saturation, Errors) is the resource-oriented sibling. If you build only a few alerts, build these."],
-        ['Alerting philosophy', "Alert on <em>symptoms</em> users care about (SLO burn, error rate, saturation), not <em>causes</em> (CPU %, disk %). Every alert should be actionable, non-flappy, and have a runbook. Alerts without runbooks train responders to ignore them."],
-        ['Alertmanager', "Prometheus’s companion for alert routing. Deduplicates, groups related alerts, silences during maintenance, routes to PagerDuty/Opsgenie/Slack/email based on labels. Inhibition rules: don’t page for “app down” when the underlying node is already alerting."],
-        ['Grafana dashboards', "Panels bound to PromQL/LogQL queries. Templating variables (<code>$service</code>, <code>$env</code>) make dashboards reusable. Keep dashboards focused — one per service, one per SLO, one for the on-call view. A dashboard that shows everything shows nothing."],
+        ['What Prometheus does', "Scrapes HTTP <code>/metrics</code> endpoints at a configured interval (15–30s typical), stores samples in a local time-series DB, exposes a query API (PromQL), and evaluates alert rules. Simple, single-binary, boringly reliable."],
+        ['Pull vs push', "Prometheus <em>pulls</em>: it decides when to scrape, so it always knows if a target is healthy (a missed scrape is itself a signal — <code>up == 0</code>). Push-based tools (StatsD, OTLP) require the target to know where to send data. <em>Pushgateway</em> handles the exception: short-lived batch jobs that die before a scrape can find them."],
+        ['Metric types', "<em>Counter</em>: monotonically increasing (requests_total, errors_total) — use <code>rate()</code> in queries. <em>Gauge</em>: goes up and down (memory bytes, queue depth). <em>Histogram</em>: pre-bucketed samples for percentiles (latency, request_size); query with <code>histogram_quantile()</code>. <em>Summary</em>: client-side percentiles — usually avoid in favour of histograms."],
+        ['Labels & multi-dimensionality', "Every metric can carry key-value labels: <code>http_requests_total{method=\"POST\",status=\"200\",service=\"api\"}</code>. Slice and aggregate by any subset in PromQL. Labels are Prometheus’s superpower — and its footgun, if you pick them poorly."],
+        ['Cardinality — the footgun', "Every unique label combination is a separate time series. High-cardinality labels (user_id, request_id, full URL paths) explode into millions of series and melt Prometheus. Rule: labels are for <em>classifying</em> (service, env, method, status); IDs and free-text belong in logs ([[logs]]) or traces ([[traces]])."],
+        ['PromQL — the essentials', "<code>rate(http_requests_total[5m])</code> — per-second rate over 5m. <code>sum by (service) (rate(...))</code> — total per service. <code>histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service))</code> — P99 latency per service. Learn <code>rate</code>, <code>sum by</code>, <code>histogram_quantile</code>, <code>increase</code>, and you’re 80% there."],
+        ['Instrumentation', "How apps expose metrics. Language client libraries (<code>prometheus_client</code> for Python, <code>client_golang</code> for Go, official ones for Java/Ruby/JS...). Or emit OTel metrics ([[traces]]) and let the OTel Collector translate to Prometheus format. Auto-instrumentation of common libraries (HTTP, DB) covers a lot for free."],
+        ['Exporters', "For things you don’t control the source of. <em>node_exporter</em>: host CPU/memory/disk/net. <em>kube-state-metrics</em>: K8s object state. <em>blackbox_exporter</em>: probe HTTP/DNS/TCP endpoints. <em>postgres_exporter</em>, <em>mysqld_exporter</em>, <em>redis_exporter</em>, <em>nginx_exporter</em>. Whatever it is, someone wrote an exporter."],
+        ['Recording rules', "Pre-compute expensive PromQL and store the result as a new metric. <code>service:http_requests:rate5m = sum by (service) (rate(http_requests_total[5m]))</code>. Dashboards and alerts then query the cheap recorded series. Essential above a certain scale."],
+        ['SLI, SLO, SLA', "<em>SLI</em>: the measurement — “% of requests under 200ms.” <em>SLO</em>: the internal target — “99.9% of SLI over 30 days.” <em>SLA</em>: the external contract with penalties. <em>Error budget</em>: 100% − SLO, the allowance you have to spend on risky changes. Alert on <em>burn rate</em>, not raw thresholds."],
+        ['Golden signals & RED/USE', "Google SRE’s four: <em>traffic</em>, <em>errors</em>, <em>latency</em>, <em>saturation</em>. <em>RED</em> (Rate, Errors, Duration) — request-oriented view of a service. <em>USE</em> (Utilisation, Saturation, Errors) — resource-oriented view of a machine. Build these before anything else."],
+        ['Alerting philosophy', "Alert on <em>symptoms</em> users care about (SLO burn, error rate, saturation), not <em>causes</em> (CPU %, disk usage). Every alert must be actionable, non-flappy, have a runbook, and route to the right team. Alerts without runbooks train responders to ignore them."],
+        ['Alertmanager', "Prometheus’s companion for alert routing. Groups related alerts, deduplicates, silences during maintenance, routes to PagerDuty/Opsgenie/Slack/email based on labels. <em>Inhibition</em>: don’t page for “app down” when the underlying node is already alerting. Grafana Alerting ([[grafana]]) is an alternative that spans multiple data sources."],
+        ['Remote_write, federation, long-term storage', "Prometheus’s local storage is deliberately short-term (typically 15 days). For long retention, <em>remote_write</em> streams samples to a scalable backend: Grafana Mimir, Cortex, Thanos, VictoriaMetrics, Datadog, or a cloud managed Prom. Federation lets one Prometheus scrape summary series from another — legacy, use remote_write for new setups."],
       ],
       code: `<span class="c"># Example PromQL — the classic four "golden signals"</span>
 
@@ -1344,7 +1347,7 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
     {
       id: 'git',
       part: 2,
-      num: '12',
+      num: '13',
       title: 'Git — Beyond the Basics',
       tag: 'rebase, cherry-pick, bisect, reflog, worktree, hooks — the tools that make git feel like a lever, not a chore.',
       intro: "Everyone knows <code>commit</code> and <code>push</code>. Where teams diverge in productivity is what happens next: how they handle history, how they recover from mistakes, how they investigate regressions, and how they resolve the inevitable conflicts. Fluent git users have almost never <em>lost</em> work — because they know git rarely deletes anything, and the reflog is a safety net for almost every catastrophe.\nThis chapter is the second layer of git — rebase, cherry-pick, bisect, reflog, worktree, hooks — the tools that separate a fluent user from someone who fights the tool.",
@@ -1401,7 +1404,7 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
     {
       id: 'cloud',
       part: 3,
-      num: '16',
+      num: '17',
       title: 'Cloud Fundamentals',
       tag: 'Regions, VPCs, subnets, storage tiers, managed services, cost — the primitives that AWS, GCP, and Azure all share.',
       intro: "AWS, GCP, and Azure look different on the surface — different names, different consoles, different quirks — but their core primitives are close cousins. Understanding regions, availability zones, VPCs, subnets, security groups, IAM, storage tiers, and managed services is the <em>durable</em> knowledge. Console UIs change every quarter; these concepts don’t.\nThe biggest early wins are architectural: keep private workloads in private subnets, expose only what needs exposing, design across AZs so a single-datacentre failure doesn’t take you out, and stay on managed services until you have a real reason to run your own. The biggest early <em>losses</em> are almost always cost: NAT egress, unused snapshots, forgotten load balancers, cross-AZ traffic. Set up billing alerts on day one.",
@@ -1458,7 +1461,7 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
     {
       id: 'rbac',
       part: 3,
-      num: '17',
+      num: '18',
       title: 'RBAC, IAM & Access Control',
       tag: 'Who can do what, to which resource, under which conditions — principals, roles, policies, workload identity, least privilege.',
       intro: "Access control decides who can do what, to which resource, under which conditions. <em>RBAC</em> — Role-Based Access Control — is the dominant model in cloud and Kubernetes: grant permissions to <em>roles</em>, assign roles to <em>principals</em>, never grant permissions to principals directly. That way you change the role once and everyone assigned inherits the change.\nCloud platforms model the same primitives — principals, permissions, resources, policies — under the name <em>IAM</em>. AWS IAM, GCP IAM, Azure Entra ID all do the same job with different words. The mature approach layers identity on top: humans authenticate via SSO to an identity provider (Okta, Google Workspace, Azure AD), and machines authenticate via <em>workload identity</em> (short-lived tokens bound to a workload) instead of long-lived static credentials.",
@@ -1515,7 +1518,7 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
     {
       id: 'databases',
       part: 4,
-      num: '18',
+      num: '19',
       title: 'Databases, Migrations & Proxies',
       tag: 'Scaling around the database — pools, replicas, migrations, transactions, and the tools that hide the seams.',
       intro: "Databases don’t scale by scaling the database process — they scale by <em>scaling around it</em>: read replicas for read load, connection pools to keep the number of open connections sane, proxies (ProxySQL, PgBouncer, RDS Proxy) that sit between your app and the database managing both, sharding when a single primary really can’t take the write load.\nAlongside that operational side is <em>schema migrations</em>: how you change the shape of a running database without downtime, and how you keep the code and the schema in lockstep across environments. And underlying it all: transactions and isolation levels — the guarantees that let you reason about concurrent writes at all.",
@@ -1688,8 +1691,8 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
 
     {
       id: 'mcp',
-      part: 5,
-      num: '25',
+      part: 6,
+      num: '30',
       title: 'MCP — Model Context Protocol',
       tag: 'A standard for giving LLM agents tools, resources, and prompts — the LSP moment for AI tool-use.',
       intro: "The <em>Model Context Protocol</em> (MCP) is an open standard, driven originally by Anthropic and now supported broadly, for connecting LLM applications to external tools and data. It defines a client-server protocol: an MCP <em>server</em> exposes tools (things the model can invoke), resources (things the model can read), and prompts (reusable prompt templates), and an MCP <em>client</em> (Claude Desktop, Claude Code, Cursor, Zed, plus a growing list of IDEs and agent frameworks) discovers and uses them.\nBefore MCP, every agent-tool integration was one-off. MCP does for LLM tool-use what LSP did for editor language support: implement the server once, every client benefits. If you build backend systems that AI agents might interact with — CI, ticketing, databases, monitoring, internal APIs — MCP is where that surface lives now.",
@@ -1747,7 +1750,7 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
     {
       id: 'service-mesh',
       part: 2,
-      num: '13',
+      num: '14',
       title: 'Service Mesh',
       tag: 'A dedicated layer for service-to-service concerns — mTLS, retries, canaries, telemetry — moved out of your app.',
       intro: "A service mesh is infrastructure that handles the cross-cutting concerns every service in a distributed system has to solve: mutual TLS between services, retries, timeouts, circuit breaking, load balancing, traffic splitting for canaries, and per-request telemetry. It does this by injecting a proxy (a <em>sidecar</em>) beside each application pod, transparently intercepting all traffic in and out. Your application code stays boring — no retry logic, no cert rotation, no distributed-tracing plumbing — and every service in the cluster gets the same treatment.\nIstio and Linkerd are the mainstream implementations on Kubernetes; Consul is another. Cilium (an eBPF-based CNI) is increasingly used as a mesh replacement, doing the same job in the kernel without sidecars. You don’t need a mesh on day one — you probably need one when hand-rolled retries, per-service TLS, and cross-service telemetry start feeling like a full-time job.",
@@ -1968,6 +1971,369 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
           correct: 1,
           why: 'Vault, cloud secret managers, and cert-manager all automate rotation for the resources they manage.',
         },
+      ],
+    },
+
+    {
+      id: 'bastion',
+      part: 1,
+      num: '09',
+      title: 'Bastion & Jump Access',
+      tag: 'How operators actually reach private infrastructure — from classic SSH bastions to modern zero-trust jump access.',
+      intro: "You can’t SSH to a database in a private subnet from your laptop — that’s the whole point of “private.” So how do operators reach private infrastructure at 2am? Historically: a <em>bastion host</em> — a single hardened server in a public subnet, the only inbound entry point, from which you jump to everything else. Modern setups replace the bastion with identity-aware managed services: AWS SSM Session Manager, GCP IAP, Azure Bastion, Tailscale, Teleport.\nThe shift is from “network position implies trust” to “every session is authenticated, authorised, and audited by identity, regardless of network position.” Zero-trust access is the direction of travel — no open port 22 on the internet, no shared SSH keys, no “oh they still had access after leaving.”",
+      concepts: [
+        ['Bastion host (classic)', "A single hardened server in a public subnet, the only host with an inbound port open from the internet. Operators SSH to the bastion, then SSH from there to private targets. Small attack surface (one server), one place to audit, one place to patch."],
+        ['SSH ProxyJump', "SSH’s built-in jump-through syntax. <code>ssh -J bastion.example.com db.internal</code> — one command, tunnels through the bastion in one hop, no shell on the bastion. Configure defaults in <code>~/.ssh/config</code> with <code>ProxyJump</code>. Beats the old <code>ProxyCommand ssh -W</code> incantation."],
+        ['Session recording & audit', "The compliance argument for bastions: every session that transits the bastion can be logged (typescript, teleport session recording, CloudWatch integration). Sensitive shops record every keystroke and every displayed byte."],
+        ['MFA gating & short-lived certs', "Modern bastions don’t accept plain SSH keys. Instead: OIDC login → issued a short-lived SSH certificate (Vault SSH secrets engine, Teleport, Smallstep) that expires in an hour. No permanent keys means no “ex-employee still has access.”"],
+        ['AWS SSM Session Manager', "Agentless bastion replacement. The target EC2 instance runs the SSM Agent (built-in on Amazon Linux and default Ubuntu AMIs). Operators run <code>aws ssm start-session --target i-abc</code> — the session tunnels through AWS, no inbound port opened, no bastion host, authenticated by IAM. Session logs go to CloudWatch."],
+        ['SSM port forwarding', "Tunnel any private TCP port to your laptop through IAM: <code>aws ssm start-session --target i-abc --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host=db.internal,portNumber=5432,localPortNumber=15432</code>. No bastion, no VPN, IAM-only. Life-changing for cloud operators."],
+        ['GCP IAP (Identity-Aware Proxy)', "Google’s equivalent. <code>gcloud compute ssh instance-x --tunnel-through-iap</code> — Google-account-authenticated SSH tunnel to a private instance. Also supports arbitrary TCP tunnelling. Works with BeyondCorp zero-trust posture policies."],
+        ['Azure Bastion', "Azure’s managed PaaS bastion — HTML5 in-browser SSH/RDP to private VMs, no client installed, authenticated via Azure AD. Also supports native SSH client tunnels for CLI users."],
+        ['Tailscale & WireGuard mesh', "A zero-config VPN mesh built on WireGuard, with SSO auth. Every device gets a Tailscale IP; ACLs govern who can reach what. Removes the “inbound port” problem — no public endpoint, and access is per-identity. See [[vpn]] for the underlying protocol."],
+        ['Teleport & identity-aware proxies', "A gateway that fronts SSH, Kubernetes, databases, web apps, and desktops. Every session is tied to a real user identity, MFA-gated, recorded, and expires with the user’s session. The mature vendor answer to the zero-trust story."],
+        ['Kubernetes access', "<code>kubectl</code> doesn’t need a bastion — it talks to the API server, which is what you protect. For private clusters: EKS Cluster Endpoint access from allow-listed CIDRs, GKE Private Cluster + IAP, or a Teleport-fronted kubeconfig. For pod-level shells, <code>kubectl exec</code> tunnels through the API server."],
+        ['No inbound ports at all', "The zero-trust endgame. Every workload sits behind an identity-aware proxy or a reverse tunnel it initiates outbound. Nothing on the public internet accepts inbound traffic except the identity-aware proxy itself. Cloudflare Zero Trust, Google BeyondCorp, Tailscale Funnel all take this shape."],
+      ],
+      code: `<span class="c"># ~/.ssh/config — jump through a bastion with one keystroke</span>
+<span class="k">Host</span> bastion
+  <span class="k">HostName</span> bastion.example.com
+  <span class="k">User</span> ec2-user
+  <span class="k">IdentityFile</span> ~/.ssh/bastion_ed25519
+
+<span class="k">Host</span> db-*
+  <span class="k">User</span> ec2-user
+  <span class="k">ProxyJump</span> bastion                       <span class="c"># tunnel through bastion for any db-* host</span>
+
+<span class="c"># now:  ssh db-1.internal    (tunnels via bastion transparently)</span>
+
+<span class="c"># --- AWS SSM: no bastion at all ---</span>
+$ aws ssm start-session --target i-0abcd1234
+$ aws ssm start-session --target i-0abcd1234 \\
+    --document-name AWS-StartPortForwardingSessionToRemoteHost \\
+    --parameters host=db.internal,portNumber=5432,localPortNumber=15432
+$ psql -h localhost -p 15432                        <span class="c"># prod DB, IAM-authenticated tunnel, no bastion</span>
+
+<span class="c"># --- GCP IAP tunnel ---</span>
+$ gcloud compute ssh my-vm --zone=europe-west1-b --tunnel-through-iap
+$ gcloud compute start-iap-tunnel my-vm 5432 \\
+    --local-host-port=localhost:15432 --zone=europe-west1-b
+
+<span class="c"># --- Tailscale: SSH by hostname, MFA-gated, no port open ---</span>
+$ tailscale up --ssh
+$ ssh admin@db-1                                    <span class="c"># works from anywhere Tailscale is up</span>`,
+      codeCap: 'ProxyJump for the classic pattern; SSM/IAP/Tailscale for the modern one. The trend line is unmistakable: away from “open a port,” toward “authenticate an identity.”',
+      quiz: [
+        { q: 'What is the purpose of a bastion host?', options: ['To serve traffic to end users', 'A single hardened server in a public subnet — the only inbound entry point — used to reach private-subnet infrastructure', 'A backup of the primary application', 'A CDN edge server'], correct: 1, why: 'One place to audit, one place to patch, one door to guard.' },
+        { q: 'What does SSH <code>ProxyJump</code> do?', options: ['Copies a file to a remote host', 'Transparently tunnels through one or more intermediate hosts in a single <code>ssh</code> command — no shell on the intermediary, no double login', 'Restarts sshd', 'Bypasses SSH authentication'], correct: 1, why: '<code>ssh -J bastion target</code>, or <code>ProxyJump bastion</code> in ~/.ssh/config for defaults.' },
+        { q: 'What does AWS SSM Session Manager give you that a classic bastion doesn’t?', options: ['A faster SSH client', 'Agentless (via SSM Agent), IAM-authenticated shell to private instances with no inbound port opened and full session logging — no bastion host needed', 'Cheaper compute', 'A backup of the target'], correct: 1, why: 'Also supports port-forwarding a private DB to your laptop with the same IAM-authenticated tunnel.' },
+        { q: 'Why prefer short-lived SSH certificates over long-lived keys on a bastion?', options: ['Certificates are faster', "Certificates expire (typically minutes to hours), so a compromised copy loses value quickly and there's no “ex-employee still has access” problem", 'Certificates are optional', 'Keys don’t work at all on Linux'], correct: 1, why: 'Vault SSH secrets engine, Teleport, Smallstep all issue short-lived certs after OIDC + MFA.' },
+        { q: 'What is the zero-trust endgame for access to internal infrastructure?', options: ['Trust anyone on the corporate network', "No inbound ports on the internet at all — every workload sits behind an identity-aware proxy, every session is authenticated + authorised + audited by identity, network position implies nothing", 'Everyone shares one strong password', 'Public IPs on every service'], correct: 1, why: 'Cloudflare Zero Trust, Google BeyondCorp, Tailscale, Teleport all take this shape. The bastion goes away.' },
+      ],
+    },
+
+    {
+      id: 'patterns',
+      part: 4,
+      num: '25',
+      title: 'Design Patterns',
+      tag: 'The dozen patterns you keep meeting — resilience, deployment, structural, data — named once so you can recognise them everywhere.',
+      intro: "Every mature distributed system converges on the same handful of patterns for the same handful of problems: retries when the network flakes, timeouts so a slow dependency doesn’t drag you under, circuit breakers when a downstream is definitely dead, canaries when a deploy might be. Learning the names lets you recognise them, discuss them, and reach for the right one — instead of re-deriving each one under production pressure.\nThe patterns below split into four families: <em>resilience</em> (surviving partial failure), <em>deployment</em> (shipping change safely), <em>structural</em> (how services compose), and <em>data</em> (keeping distributed state consistent). None are silver bullets; all are trade-offs. But they’re the vocabulary of the trade.",
+      concepts: [
+        ['12-Factor App', "A checklist for cloud-native apps: config in env vars, stateless processes, port binding, disposability, dev/prod parity, treat logs as event streams, run admin tasks as one-off processes. Old but still the baseline sanity check. See <em>12factor.net</em>."],
+        ['Timeout', "Set one on every network call, no exceptions. Without a timeout, a hung downstream ties up your resources until <em>they</em> notice. Rule of thumb: an outer timeout must be longer than every inner timeout it wraps."],
+        ['Retry with exponential backoff + jitter', "Failed request? Retry after 100ms, then 200ms, then 400ms… with random jitter added. Backoff avoids hammering a struggling downstream; jitter avoids <em>thundering herds</em> where every client retries in sync at the exact same moment."],
+        ['Circuit breaker', "Track failure rate to a downstream. Above a threshold, <em>open the circuit</em> — reject requests immediately without trying, for a cool-off window. Then <em>half-open</em>: let one through as a probe; if it succeeds, close the circuit. Netflix Hystrix, resilience4j, Polly. Also built into service meshes ([[service-mesh]])."],
+        ['Bulkhead', "Isolate resource pools so one dependency’s failure can’t drown the whole app. Separate thread pool per downstream; separate connection pools per DB. Named after the compartments in a ship’s hull — a leak in one doesn’t sink the boat."],
+        ['Idempotency & idempotency keys', "For non-idempotent operations (POST /charge), let the client attach a unique <em>Idempotency-Key</em> header. The server records the first result and returns the same result for retries with the same key. Standard in every payments API for good reason."],
+        ['Blue-green deployment', "Run two identical environments — <em>blue</em> serving traffic, <em>green</em> idle. Deploy the new version to green, run smoke tests, switch the load balancer. Rollback = flip the switch back. Doubles infra cost briefly; buys instant, complete rollback."],
+        ['Canary deployment', "Route a small % of traffic to the new version (5%), watch metrics, gradually ramp (20%, 50%, 100%). Detects bad releases without a full-scale blast. Combines with service-mesh weighted routing or ingress splitting. See [[service-mesh]] and [[argocd]]."],
+        ['Feature flags', "Ship code disabled; enable it later by toggling a flag (LaunchDarkly, GrowthBook, Unleash, Flagsmith, or a config file). Decouples <em>deploy</em> from <em>release</em>. Ramp features to a % of users; kill-switch a bad feature without redeploying."],
+        ['Immutable infrastructure', "Never SSH in and edit a server. If config drifts, replace the whole instance. Docker images and Terraform-managed VMs both embody this. Consequences: reproducible, auditable, replaceable. Eliminates the “works on that server” class of bug."],
+        ['Sidecar & Ambassador', "<em>Sidecar</em>: a helper container running alongside the app in the same Pod, sharing its lifecycle. Adds cross-cutting concerns (logging, mTLS, config-reload) without modifying the app. <em>Ambassador</em>: a sidecar that proxies outbound traffic — the app talks localhost, ambassador handles service discovery, retries, TLS. See [[service-mesh]]."],
+        ['Saga', "A long-running business transaction spanning multiple services, split into local transactions with <em>compensating actions</em>. If step 3 fails, run compensations for 1 and 2 to undo. Replaces the impossible-at-scale distributed transaction."],
+        ['Outbox pattern', "For reliably publishing an event alongside a DB write: write the business row and an outbox row in the same DB transaction. A separate process reads outbox rows and publishes to the broker. Avoids the classic bug where the DB commits but the message publish fails. See [[queues]]."],
+        ['CQRS & Event Sourcing', "<em>CQRS</em> (Command-Query Responsibility Segregation): separate write model (accepts commands) from read model (serves queries), often with different storage. <em>Event Sourcing</em>: state is derived by replaying an append-only log of events. Powerful for audit-heavy or highly-scaled reads; overkill for a CRUD app."],
+        ['Leader election', "When exactly one instance must act as leader (a scheduler, a stream consumer), instances race to acquire a lease in a shared store (etcd, Zookeeper, Redis, K8s Lease). The winner leads; if it dies, its lease expires and another wins. Built into K8s controller-runtime and every serious framework."],
+      ],
+      code: `<span class="c"># Retry with exponential backoff + jitter (Python)</span>
+<span class="k">import</span> time, random
+
+<span class="k">def</span> call_with_retry(fn, max_attempts=<span class="n">5</span>, base=<span class="n">0.1</span>, cap=<span class="n">10.0</span>):
+    <span class="k">for</span> attempt <span class="k">in</span> range(max_attempts):
+        <span class="k">try</span>:
+            <span class="k">return</span> fn()
+        <span class="k">except</span> TransientError <span class="k">as</span> e:
+            <span class="k">if</span> attempt == max_attempts - <span class="n">1</span>:
+                <span class="k">raise</span>
+            sleep = min(cap, base * <span class="n">2</span>**attempt) * (<span class="n">0.5</span> + random.random())
+            time.sleep(sleep)     <span class="c"># backoff + full jitter</span>
+
+<span class="c"># Circuit breaker (pseudocode)</span>
+<span class="k">class</span> Circuit:
+    <span class="k">def</span> call(self, fn):
+        <span class="k">if</span> self.state == <span class="s">"OPEN"</span> <span class="k">and</span> time.now() &lt; self.opened_until:
+            <span class="k">raise</span> CircuitOpen()               <span class="c"># fail fast, don't try</span>
+        <span class="k">try</span>:
+            r = fn()
+            self.on_success()
+            <span class="k">return</span> r
+        <span class="k">except</span>:
+            self.on_failure()                   <span class="c"># if failure rate crosses threshold, OPEN</span>
+            <span class="k">raise</span>
+
+<span class="c"># Outbox pattern — one DB transaction, event publish guaranteed</span>
+<span class="k">with</span> db.transaction():
+    db.execute(<span class="s">"INSERT INTO orders ..."</span>)
+    db.execute(<span class="s">"INSERT INTO outbox (topic, payload) VALUES (?, ?)"</span>, <span class="s">"orders"</span>, order.json())
+<span class="c"># A separate worker reads outbox rows, publishes to Kafka, deletes on ack.</span>`,
+      codeCap: 'Backoff+jitter, circuit breaker, outbox — three tiny patterns that turn a fragile RPC caller into a resilient distributed component.',
+      quiz: [
+        { q: 'Why add <em>jitter</em> to retry backoff?', options: ['To make the code more random for fun', "Without jitter, many clients retry in lockstep at the same instants (100ms, 200ms, 400ms), producing a thundering herd that keeps the downstream on its knees", 'To slow retries down further', 'It’s optional; jitter has no real effect'], correct: 1, why: 'AWS builder’s library recommends full jitter — random(0, backoff) — over other variants.' },
+        { q: 'What state does a circuit breaker enter when a downstream is definitely dead?', options: ['CLOSED — allow calls', 'OPEN — reject calls immediately without trying, for a cool-off period', 'FROZEN', 'STOPPED'], correct: 1, why: 'After the cool-off, it goes HALF-OPEN, lets one probe request through, and either re-opens or closes based on the outcome.' },
+        { q: 'What is the essential idea of blue-green deployment?', options: ['A colour scheme for dashboards', "Run two identical environments; deploy the new version to the idle one; switch the load balancer when ready; instant rollback by flipping back", 'Deploy every service in blue and green stripes', 'A branding technique'], correct: 1, why: 'Costs a full duplicate briefly; buys near-instant rollback.' },
+        { q: 'What is the outbox pattern for?', options: ['Managing incoming email', "Reliably publishing an event alongside a DB write — both go into the same transaction, a separate process publishes rows to the broker afterwards, so a partial failure can’t drop the event", 'Storing outgoing HTTP requests', 'A rate-limiting technique'], correct: 1, why: 'Solves the classic “dual-write” problem where you write to two systems and one succeeds, one fails.' },
+        { q: 'What do feature flags decouple?', options: ['Frontend from backend', "Deploy from release — ship code disabled, enable it later via a toggle, ramp to % of users, kill-switch a bad feature without redeploying", 'CI from CD', 'The database from the application'], correct: 1, why: 'LaunchDarkly, GrowthBook, Unleash, Flagsmith are the tooling. Also enables trunk-based dev without long-lived branches.' },
+      ],
+    },
+
+    {
+      id: 'logs',
+      part: 5,
+      num: '27',
+      title: 'Logs & Loki',
+      tag: 'Discrete events with context — structured logs, correlation IDs, LogQL, and cheap-at-scale storage.',
+      intro: "Logs are the story a system tells about itself, one event at a time. Unlike metrics — which are pre-aggregated numbers — logs preserve the specifics: which user, which request ID, which error, which stack trace. That specificity is expensive at scale, so mature logging is a discipline of <em>structuring</em>, <em>sampling</em>, and <em>routing</em> — not a firehose of unstructured text.\nThe reference open-source stack is <em>Loki</em>, from Grafana Labs — built on the deliberate insight that you don’t need to index every log line, just its labels (like Prometheus). This makes Loki dramatically cheaper than Elastic for log storage. Alternatives: Elasticsearch/OpenSearch (full-text indexed), Datadog Logs, Sumo Logic, Splunk (feature-rich, historically expensive), CloudWatch Logs (AWS-native).",
+      concepts: [
+        ['Structured logging', "Every log line is a JSON object with typed fields: <code>{\"level\":\"error\",\"msg\":\"payment failed\",\"user_id\":42,\"request_id\":\"abc\",\"amount\":19.99}</code>. Every field becomes queryable. Free-text logs are grep material; structured logs are data."],
+        ['Log levels', "TRACE (extreme detail), DEBUG (development), INFO (routine events), WARN (something odd), ERROR (something failed), FATAL (something died). Ship INFO and above in production; enable DEBUG on demand via feature flag or config reload."],
+        ['Correlation / Request IDs', "Every incoming request gets a unique ID (usually a UUID or a hex ID from the trace context). Propagate it through every downstream call in a header (<code>X-Request-Id</code>) and log it in every event. Then a single search reconstructs the full journey."],
+        ['Contextual logging', "Attach persistent context (user ID, request ID, tenant) to the logger at the request boundary; every subsequent log within that request inherits it. Structured loggers (zap, logrus, pino, structlog) all support this."],
+        ['Loki architecture', "Loki indexes only labels (like Prometheus). The log body is stored as compressed chunks in object storage (S3, GCS). No full-text index means <em>label design matters</em>: labels like <code>app</code>, <code>namespace</code>, <code>level</code> are fine; a label per user_id would explode cardinality."],
+        ['LogQL', "Loki’s query language. Selector on labels then optional line filter: <code>{app=\"api\",level=\"error\"} |= \"timeout\"</code>. Metric queries too: <code>sum by (service) (rate({app=\"api\"} |= \"error\" [5m]))</code> counts error lines per service per second — bridges logs into the metrics world."],
+        ['Cardinality — the same trap as metrics', "High-cardinality labels (user_id, request_id, trace_id) will kill Loki as fast as they kill Prometheus. Put those in the log <em>body</em> as JSON fields, extract them at query time with <code>| json</code> and match with <code>| user_id=\"42\"</code>. Cross-ref: [[monitoring]]."],
+        ['Sampling & retention', "Not every DEBUG line needs to survive. Sample by service, by level, by ratio. Retention: hot storage for 7 days for on-call, warm for 30, cold in object storage for 1 year for compliance. Loki does this via storage-class transitions."],
+        ['Log shipping pipelines', "How logs get from apps to storage. <em>Fluent Bit</em>: lightweight, C-based, ubiquitous DaemonSet on K8s. <em>Vector</em>: Rust-based, fast, rich transforms. <em>Fluentd</em>: older Ruby, feature-rich. <em>Promtail</em>: Grafana’s Loki-native shipper. <em>Alloy</em>: Grafana’s newer unified agent for logs + metrics + traces (see [[grafana]])."],
+        ['Log-based alerts', "Alert when a certain log line appears too often — or stops appearing. <em>Grafana Alerting on LogQL</em>: <code>sum(rate({app=\"payments\",level=\"error\"}[5m])) &gt; 5</code>. Especially useful when your app doesn’t emit metrics for a failure but does log it."],
+        ['PII & sensitive data', "Never log raw passwords, tokens, or PII. Structured loggers can filter/mask specific fields automatically. Regulated environments run scrubbers (Vector transforms, cloud-native tools) between the app and storage."],
+        ['SIEM integration', "Security teams tail your logs into a SIEM (Splunk, Elastic Security, Sumo, Datadog, Grafana Loki + Grafana Security). Auth events, admin actions, denied requests, network flows — all funneled to a place where security correlations run. See [[waf]]."],
+      ],
+      code: `<span class="c"># Structured logging (Python + structlog)</span>
+<span class="k">import</span> structlog
+log = structlog.get_logger().bind(service=<span class="s">"api"</span>, env=<span class="s">"prod"</span>)
+
+<span class="k">def</span> handle_charge(user_id, amount, request_id):
+    l = log.bind(user_id=user_id, request_id=request_id)
+    l.info(<span class="s">"charge.start"</span>, amount=amount)
+    <span class="k">try</span>:
+        result = charge(amount)
+        l.info(<span class="s">"charge.ok"</span>, txn=result.id)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        l.error(<span class="s">"charge.fail"</span>, err=str(e), amount=amount)
+        <span class="k">raise</span>
+
+<span class="c"># Emitted as JSON:</span>
+<span class="c"># {"service":"api","env":"prod","user_id":42,"request_id":"abc","event":"charge.fail","err":"timeout","amount":19.99,"level":"error"}</span>
+
+<span class="c"># --- LogQL queries you'll actually run ---</span>
+
+<span class="c"># All error lines in api during last 5 minutes</span>
+{app=<span class="s">"api"</span>, level=<span class="s">"error"</span>} [<span class="n">5m</span>]
+
+<span class="c"># Rate of 5xx-like errors per service</span>
+sum by (service) (
+  rate({namespace=<span class="s">"prod"</span>} |= <span class="s">"error"</span> [<span class="n">5m</span>])
+)
+
+<span class="c"># Extract JSON fields, then filter by user_id</span>
+{app=<span class="s">"api"</span>, level=<span class="s">"error"</span>}
+  | json
+  | user_id=<span class="s">"42"</span>
+  | line_format <span class="s">"{{.request_id}}  {{.event}}  {{.err}}"</span>
+
+<span class="c"># --- Fluent Bit DaemonSet config (K8s pods → Loki) ---</span>
+<span class="k">[INPUT]</span>
+    Name        tail
+    Path        /var/log/containers/*.log
+    Parser      docker
+    Tag         kube.*
+
+<span class="k">[OUTPUT]</span>
+    Name        loki
+    Match       kube.*
+    Url         http://loki:3100/loki/api/v1/push
+    Labels      job=fluent-bit, cluster=prod, $kubernetes['namespace_name']`,
+      codeCap: 'Bind context once, log JSON, query with LogQL. Loki indexes only labels — put user IDs in the body, extract with <code>| json</code>.',
+      quiz: [
+        { q: 'Why prefer structured (JSON) logs over free-text lines?', options: ['They look prettier', 'Every field is typed and queryable — you can filter by user_id or level without regex-ing free text; structured loggers can also mask/scrub sensitive fields', 'They are smaller on disk', 'They are required by law'], correct: 1, why: 'Grep is fine for one server; not fine for a fleet with a query engine in front.' },
+        { q: 'What key architectural choice makes Loki cheaper than Elasticsearch for logs?', options: ['Compression algorithm', 'Loki indexes only labels (not the log body), storing bodies as compressed chunks in object storage — full-text queries scan on demand instead of paying for a full inverted index', 'Uses Postgres internally', 'Only stores errors'], correct: 1, why: 'Same insight as Prometheus for metrics: index the shape, not the content.' },
+        { q: 'What should you NOT use as a Loki label?', options: ['<code>app</code>, <code>namespace</code>, <code>level</code>', 'High-cardinality values like <code>user_id</code> or <code>request_id</code> — put those in the log body and extract with <code>| json</code>', 'Static values like <code>cluster=prod</code>', 'The service name'], correct: 1, why: 'Same cardinality trap as Prometheus. Millions of label combinations = melted index.' },
+        { q: 'What does a correlation / request ID do?', options: ['Encrypts logs', 'Ties every log line across every service for one request together via a shared ID, so a single search reconstructs the full journey', 'Deduplicates logs', 'Compresses logs'], correct: 1, why: 'Propagate it in an HTTP header (X-Request-Id or W3C traceparent) so downstream services log with the same ID.' },
+        { q: 'A LogQL query <code>sum by (service) (rate({env=\"prod\"} |= \"error\" [5m]))</code> gives you…', options: ['Raw log lines', 'A metric derived from logs: error-line rate per second, aggregated by service — usable in Grafana dashboards and alerts alongside real metrics', 'A list of user IDs', 'A syntax error'], correct: 1, why: 'This bridges logs into the metrics world — great when the app doesn’t emit a proper metric for the failure but does log it.' },
+      ],
+    },
+
+    {
+      id: 'traces',
+      part: 5,
+      num: '28',
+      title: 'Traces & OpenTelemetry',
+      tag: 'Follow one request across every service it touches — spans, context propagation, sampling, and the vendor-neutral SDK that ties it together.',
+      intro: "A metric tells you <em>something is slow</em>. A log tells you <em>this specific request failed</em>. A trace tells you <em>where inside a 15-service call chain the time actually went</em>. Distributed tracing is what makes debugging modern microservice systems tractable — without it, a P99 latency regression could be any of a hundred services.\nOpenTelemetry (OTel) is the vendor-neutral standard. Language SDKs emit spans in a common format (OTLP); you send OTLP to any backend — Tempo, Jaeger, Honeycomb, Datadog, cloud APMs — and switch backends without touching the app. Learn OTel once; use it forever.",
+      concepts: [
+        ['Trace, Span, Parent-Child', "A <em>trace</em> is one request’s journey. A <em>span</em> is one unit of work within it — a service, an operation, a duration, some attributes. Spans have parent-child relationships forming a tree. Root span = the entry point (an incoming HTTP request); leaf spans = the deepest calls (a DB query)."],
+        ['Trace ID & Span ID', "Every trace has a unique <em>trace_id</em>; every span has a unique <em>span_id</em>. Spans reference their parent by span_id. These are the identifiers you propagate — everything else derives from them."],
+        ['Context propagation', "How the trace context travels between services. The <em>W3C Trace Context</em> standard defines the <code>traceparent</code> HTTP header: <code>traceparent: 00-{trace_id}-{parent_span_id}-{flags}</code>. Every OTel SDK reads it on incoming requests, writes it on outgoing. Break the chain and the trace splits."],
+        ['OpenTelemetry SDK', "The instrumentation library for your language (Python, Go, Java, JS, Rust, .NET, Ruby...). Provides <em>tracers</em>, <em>meters</em> (for metrics), and <em>loggers</em>, all in one SDK. You either instrument manually (<code>with tracer.start_as_current_span(\"charge\") as span: ...</code>) or use auto-instrumentation."],
+        ['OTLP — the wire protocol', "<em>OpenTelemetry Protocol</em>, gRPC or HTTP/protobuf. What SDKs send. What collectors accept. What every backend now supports. Vendor-neutral by design — you can pipe OTLP to Tempo <em>and</em> Datadog <em>and</em> Honeycomb at the same time."],
+        ['Auto- vs manual instrumentation', "<em>Auto</em>: an OTel agent wraps common libraries (HTTP servers, DB drivers, HTTP clients) at runtime, emitting spans without code changes. Java, Python, .NET have particularly strong auto-instrumentation. <em>Manual</em>: <code>@tracer.start_as_current_span</code> around your business operations. Real apps mix both."],
+        ['Sampling — head vs tail', "You can’t store every trace at scale. <em>Head sampling</em>: decide at the root span (10% of requests). Simple but blind — an interesting slow trace might not be sampled. <em>Tail sampling</em>: buffer the whole trace, decide at the end (keep it if slow, if errored, if rare). Requires an OTel Collector to buffer."],
+        ['Semantic conventions', "OTel defines standard attribute names: <code>http.method</code>, <code>http.status_code</code>, <code>db.system</code>, <code>db.statement</code>, <code>rpc.service</code>. Consistent conventions across every language mean dashboards and alerts work uniformly."],
+        ['Exemplars — metrics ↔ traces', "A metric point (P99 latency spike at 14:32) can carry an <em>exemplar</em>: a link to a specific trace that contributed to that bucket. In Grafana, click the spike, see the trace. This is the killer bridge between the two pillars."],
+        ['OpenTelemetry Collector', "A standalone service that receives OTLP (or vendor formats), transforms it (add resource attributes, sample, filter, redact PII), and exports to one or many backends. Run as a DaemonSet (per-node) or Deployment (central). <em>Alloy</em> is Grafana’s distribution — see [[grafana]]."],
+        ['Backends', "<em>Tempo</em>: Grafana Labs’ trace store, object-storage-backed, cheap. <em>Jaeger</em>: original open-source, self-hosted UI. <em>Zipkin</em>: older, still fine. <em>Honeycomb</em>: powerful high-cardinality analytics, SaaS. <em>Datadog / New Relic / Dynatrace</em>: full APMs with traces built in. All accept OTLP."],
+        ['Cost & performance', "Instrumentation isn’t free — every span costs CPU, memory, and network. Auto-instrumentation especially can double allocation rates in hot paths. Measure the overhead, sample aggressively, disable instrumentation for tight loops. In tail-sampled setups, the biggest cost is the Collector fleet."],
+      ],
+      code: `<span class="c"># OpenTelemetry — Python auto-instrumentation, one command</span>
+$ opentelemetry-instrument \\
+    --traces_exporter otlp --metrics_exporter otlp \\
+    --service_name orders \\
+    python app.py
+
+<span class="c"># Or manual instrumentation for a business operation</span>
+<span class="k">from</span> opentelemetry <span class="k">import</span> trace
+tracer = trace.get_tracer(<span class="s">"orders"</span>)
+
+<span class="k">def</span> handle_charge(user_id, amount):
+    <span class="k">with</span> tracer.start_as_current_span(<span class="s">"charge"</span>) <span class="k">as</span> span:
+        span.set_attribute(<span class="s">"user.id"</span>, user_id)
+        span.set_attribute(<span class="s">"amount"</span>, amount)
+        <span class="k">try</span>:
+            result = payment_gateway.charge(amount)  <span class="c"># auto-instrumented, becomes a child span</span>
+            span.set_attribute(<span class="s">"txn.id"</span>, result.id)
+            <span class="k">return</span> result
+        <span class="k">except</span> Exception <span class="k">as</span> e:
+            span.record_exception(e)
+            span.set_status(trace.StatusCode.ERROR)
+            <span class="k">raise</span>
+
+<span class="c"># W3C traceparent header propagated automatically by the SDK on outgoing calls:</span>
+<span class="c"># traceparent: 00-a1b2c3d4e5f60718293a4b5c6d7e8f90-b7ad6b7169203331-01</span>
+
+<span class="c"># --- OpenTelemetry Collector config: OTLP in → Tempo + tail sampling ---</span>
+<span class="k">receivers</span>:
+  <span class="k">otlp</span>:
+    <span class="k">protocols</span>:
+      <span class="k">grpc</span>: { <span class="k">endpoint</span>: <span class="s">"0.0.0.0:4317"</span> }
+      <span class="k">http</span>: { <span class="k">endpoint</span>: <span class="s">"0.0.0.0:4318"</span> }
+
+<span class="k">processors</span>:
+  <span class="k">tail_sampling</span>:
+    <span class="k">decision_wait</span>: <span class="s">10s</span>
+    <span class="k">policies</span>:
+      - { <span class="k">name</span>: <span class="s">errors</span>,   <span class="k">type</span>: <span class="s">status_code</span>, <span class="k">status_code</span>: { <span class="k">status_codes</span>: [ERROR] } }
+      - { <span class="k">name</span>: <span class="s">slow</span>,     <span class="k">type</span>: <span class="s">latency</span>,     <span class="k">latency</span>: { <span class="k">threshold_ms</span>: <span class="n">500</span> } }
+      - { <span class="k">name</span>: <span class="s">sample-1</span>, <span class="k">type</span>: <span class="s">probabilistic</span>, <span class="k">probabilistic</span>: { <span class="k">sampling_percentage</span>: <span class="n">1</span> } }
+
+<span class="k">exporters</span>:
+  <span class="k">otlp/tempo</span>:
+    <span class="k">endpoint</span>: <span class="s">tempo:4317</span>
+    <span class="k">tls</span>: { <span class="k">insecure</span>: <span class="n">true</span> }
+
+<span class="k">service</span>:
+  <span class="k">pipelines</span>:
+    <span class="k">traces</span>:
+      <span class="k">receivers</span>:  [otlp]
+      <span class="k">processors</span>: [tail_sampling]
+      <span class="k">exporters</span>:  [otlp/tempo]`,
+      codeCap: 'Instrument once, propagate the context automatically, tail-sample at the Collector so you keep every error and every slow trace, and 1% of the rest.',
+      quiz: [
+        { q: 'What is a <em>span</em>?', options: ['A time range on a dashboard', 'One unit of work inside a trace — a service, an operation, a duration, attributes, and a parent span ID', 'A whole trace', 'A log line'], correct: 1, why: 'Spans form a tree rooted at the initial request; leaves are the deepest calls (DB queries, downstream RPCs).' },
+        { q: 'What is the W3C <code>traceparent</code> header for?', options: ['Marks a request as a parent', 'Carries the trace context (trace_id + parent_span_id + flags) between services so a request’s spans stay linked as one trace', 'A rate-limit signal', 'A cookie replacement'], correct: 1, why: 'Every OTel SDK reads it on incoming and writes it on outgoing HTTP calls. Break the chain, split the trace.' },
+        { q: 'Why is OpenTelemetry considered vendor-neutral?', options: ['It is free', 'Instrumentation SDKs emit OTLP; every major tracing backend accepts OTLP; you can swap backends without changing app code', 'It only runs on-prem', 'It is single-vendor'], correct: 1, why: 'That’s why OTel won the space: implement once, ship traces to Tempo today, Datadog tomorrow, no code change.' },
+        { q: 'What’s the difference between head and tail sampling?', options: ['Head is faster', 'Head decides at the root span (10% of all traces); tail buffers each trace and decides after it completes (keep all errors, all slow ones, plus a small % of normal)', 'They are the same', 'Tail is deprecated'], correct: 1, why: 'Tail requires a Collector buffer per trace and enough memory, but keeps every interesting trace.' },
+        { q: 'What is an <em>exemplar</em> in metrics?', options: ['A best-practice example', 'A pointer from a metric bucket to a specific trace that contributed to it — click the P99 latency spike in Grafana, land on the actual trace that caused it', 'A prime number', 'A type of sampler'], correct: 1, why: 'The bridge between metrics and traces — one of the most impactful features to enable in OTel.' },
+      ],
+    },
+
+    {
+      id: 'grafana',
+      part: 5,
+      num: '29',
+      title: 'Grafana, Alloy & Alerting',
+      tag: 'The dashboard, the pipeline, the alert — where all three pillars come together into an operator’s workspace.',
+      intro: "Grafana is the free, open-source dashboard-and-alerting layer that everyone uses on top of Prometheus, Loki, Tempo, and dozens more data sources. Its power is in stitching signals together: a service’s dashboard shows metrics, log lines from Loki, and traces from Tempo in the same view — a P99 spike is one click away from the exact trace that caused it.\n<em>Alloy</em> is Grafana Labs’ collector — a single unified agent replacing Promtail (for logs), OTel Collector (for traces), and various other shippers. Configure it once and it pushes metrics, logs, and traces from every host and every workload. <em>Grafana Alerting</em> is the unified alert engine — one place to define rules against Prometheus, Loki, or any queryable source, and to route alerts through contact points and notification policies.",
+      concepts: [
+        ['Grafana dashboards', "Panels arranged on a grid, each panel bound to a query against a data source. Templating variables (<code>$service</code>, <code>$env</code>, <code>$namespace</code>) let one dashboard serve many contexts. Folders, permissions, teams, and orgs handle who sees what."],
+        ['Panel types', "<em>Time series</em> (the workhorse). <em>Stat</em> (big single number, colour-coded). <em>Gauge</em>. <em>Bar chart</em>. <em>Table</em>. <em>Heatmap</em>. <em>Logs</em> (streams from Loki). <em>Traces</em> (span-tree view from Tempo). <em>Node graph</em>. <em>State timeline</em>. Pick per data shape."],
+        ['Data sources', "Grafana connects to anything queryable. Built-in: Prometheus, Loki, Tempo, Mimir, Graphite, InfluxDB, Elasticsearch, Postgres, MySQL, CloudWatch, GCP Monitoring, Azure Monitor, Jaeger. Multi-source dashboards are the default — Prometheus metric, Loki log lines, Tempo traces on the same screen."],
+        ['Grafana Loki, Tempo, Mimir, Pyroscope', "Grafana Labs’ own backends. <em>Loki</em>: logs. <em>Tempo</em>: traces. <em>Mimir</em>: Prometheus-compatible metrics at horizontal scale. <em>Pyroscope</em>: continuous profiling (CPU flamegraphs over time). All object-storage backed, all cheap at scale, all speak OTel + Prometheus."],
+        ['Alloy — the unified collector', "Grafana’s next-generation agent, replacing Promtail, the classic Grafana Agent, and doubling as an OTel Collector. Single binary, single config, collects and forwards metrics, logs, and traces. Configuration uses <em>Grafana River</em> syntax — declarative pipelines from receiver → processor → exporter."],
+        ['Grafana Alerting', "The unified alerting engine (introduced in Grafana 8). Define rules against any queryable data source (PromQL, LogQL, SQL, cloud APIs). Rules evaluate on a schedule and fire alerts. Replaces both classic dashboard alerts and Prometheus Alertmanager’s rule syntax."],
+        ['Contact points & notification policies', "<em>Contact points</em>: destinations (Slack channel, PagerDuty service, email, webhook, MS Teams). <em>Notification policies</em>: tree-shaped routing based on labels — <code>severity=critical</code> → PagerDuty; <code>team=payments</code> → their Slack channel; default → email digest."],
+        ['Silences & mute timings', "<em>Silences</em>: temporarily suppress alerts matching a label selector — during a known maintenance, or while a fix is deploying. <em>Mute timings</em>: named windows (business hours, weekends) applied to notification policies."],
+        ['On-call & incident tooling', "Beyond alerts: <em>Grafana OnCall</em> (open-source on-call management), <em>Grafana Incident</em>, PagerDuty, Opsgenie, incident.io. Rotations, escalations, runbook links from every alert, post-incident review workflow."],
+        ['Dashboards-as-code', "Store dashboards as JSON in git, sync with tooling: <em>Grafonnet</em> (Jsonnet library), <em>Grizzly</em>, Terraform Grafana provider, <em>Grafana Cloud stack IaC</em>. Change dashboards via PR; roll back with git; audit history."],
+        ['Grafana Cloud', "The managed hosted offering — Grafana + Mimir + Loki + Tempo + OnCall as a SaaS, with a generous free tier. Especially handy for teams who don’t want to operate a metrics stack themselves. Federated data sources work too — keep some data self-hosted, ship the rest."],
+        ['Screens that actually help on-call', "A good on-call dashboard: golden signals up top (traffic, errors, latency, saturation), current SLO burn rate, recent deploys overlaid as annotations, links to runbooks. A dashboard with 40 panels shows nothing; one with 8 focused panels tells a story."],
+      ],
+      code: `<span class="c"># Grafana Alloy — one config, all three signals flowing to Grafana Cloud</span>
+<span class="c"># /etc/alloy/config.alloy (Grafana River syntax)</span>
+
+<span class="k">logging</span> {
+  <span class="k">level</span>  = <span class="s">"info"</span>
+  <span class="k">format</span> = <span class="s">"logfmt"</span>
+}
+
+<span class="c">// ---- Metrics: scrape Prometheus /metrics endpoints ----</span>
+<span class="k">prometheus.scrape</span> <span class="s">"apps"</span> {
+  <span class="k">targets</span> = [{ __address__ = <span class="s">"app-1:8080"</span> }, { __address__ = <span class="s">"app-2:8080"</span> }]
+  <span class="k">forward_to</span> = [prometheus.remote_write.default.receiver]
+}
+<span class="k">prometheus.remote_write</span> <span class="s">"default"</span> {
+  <span class="k">endpoint</span> { <span class="k">url</span> = <span class="s">"https://prom.grafana.net/api/prom/push"</span> }
+}
+
+<span class="c">// ---- Logs: tail K8s pod logs, ship to Loki ----</span>
+<span class="k">loki.source.kubernetes</span> <span class="s">"pods"</span> {
+  <span class="k">targets</span>    = discovery.kubernetes.pods.targets
+  <span class="k">forward_to</span> = [loki.write.default.receiver]
+}
+<span class="k">loki.write</span> <span class="s">"default"</span> {
+  <span class="k">endpoint</span> { <span class="k">url</span> = <span class="s">"https://loki.grafana.net/loki/api/v1/push"</span> }
+}
+
+<span class="c">// ---- Traces: receive OTLP from apps, ship to Tempo ----</span>
+<span class="k">otelcol.receiver.otlp</span> <span class="s">"in"</span> {
+  <span class="k">grpc</span> { <span class="k">endpoint</span> = <span class="s">"0.0.0.0:4317"</span> }
+  <span class="k">output</span> { <span class="k">traces</span> = [otelcol.exporter.otlp.tempo.input] }
+}
+<span class="k">otelcol.exporter.otlp</span> <span class="s">"tempo"</span> {
+  <span class="k">client</span> { <span class="k">endpoint</span> = <span class="s">"tempo.grafana.net:4317"</span> }
+}
+
+<span class="c"># --- Grafana Alerting rule (unified format, defined in Grafana UI or as YAML) ---</span>
+<span class="k">apiVersion</span>: <span class="n">1</span>
+<span class="k">groups</span>:
+  - <span class="k">name</span>: api
+    <span class="k">rules</span>:
+      - <span class="k">alert</span>: <span class="s">HighErrorRate</span>
+        <span class="k">expr</span>: |
+          sum(rate(http_requests_total{status=~<span class="s">"5.."</span>}[5m])) by (service)
+          /
+          sum(rate(http_requests_total[5m])) by (service)  <span class="k">&gt;</span>  <span class="n">0.02</span>
+        <span class="k">for</span>: <span class="s">5m</span>
+        <span class="k">labels</span>:    { <span class="k">severity</span>: <span class="s">critical</span>, <span class="k">team</span>: <span class="s">payments</span> }
+        <span class="k">annotations</span>:
+          <span class="k">summary</span>:  <span class="s">"{{ $labels.service }} 5xx rate above 2%"</span>
+          <span class="k">runbook</span>:  <span class="s">"https://runbooks.example.com/api-5xx"</span>`,
+      codeCap: 'One Alloy config, three pipelines (metrics, logs, traces). One alert rule, labels that route through notification policies. That’s a working observability stack.',
+      quiz: [
+        { q: 'What does Grafana Alloy replace?', options: ['Grafana itself', 'Promtail (logs), the classic Grafana Agent, and various OTel Collector deployments — one unified agent for metrics, logs, and traces', 'Prometheus', 'A CI runner'], correct: 1, why: 'Single binary, single config, one thing to install per host. Configured in Grafana River syntax.' },
+        { q: 'Why are templating variables (<code>$service</code>, <code>$env</code>) valuable on Grafana dashboards?', options: ['They make queries slower', 'One dashboard serves many contexts — pick service and env from dropdowns instead of maintaining 20 similar dashboards', 'They encrypt values', 'They are decorative'], correct: 1, why: 'Combined with folder-scoped permissions, small teams can serve dozens of services from a handful of well-templated dashboards.' },
+        { q: 'What are contact points and notification policies in Grafana Alerting?', options: ['UI colour choices', 'Contact points are destinations (Slack, PagerDuty, email); notification policies are tree-shaped routing rules on alert labels — severity=critical → PagerDuty, team=X → their channel', 'Replacements for dashboards', 'Free-tier features only'], correct: 1, why: 'Design the label taxonomy up front — severity, team, service, env — and the routing tree writes itself.' },
+        { q: 'What is the value of viewing metrics, logs, and traces on the same dashboard?', options: ['It looks impressive', "Correlation — a P99 latency spike in the metric panel, the log lines that fired at that moment, and an exemplar link to the exact trace that caused it, all one click apart", 'It makes the browser faster', 'It’s the only option'], correct: 1, why: 'The whole point of observability platforms: pivot between signals during an incident without switching tools.' },
+        { q: 'What is Grafana Mimir?', options: ['A UI framework', 'Grafana Labs’ Prometheus-compatible, horizontally-scalable metrics backend — same query language, object storage, multi-tenant', 'A logs pipeline', 'A profiling tool'], correct: 1, why: 'Tempo does the same for traces, Loki for logs, Pyroscope for profiles — the Grafana LGTM+P stack.' },
       ],
     },
   ];
