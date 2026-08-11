@@ -1,0 +1,91 @@
+<title>The Practitioner's Field Manual to DevOps</title>
+<link rel="stylesheet" href="manual.css">
+
+<div class="app">
+  <div class="masthead">
+    <div class="masthead-brand">
+      <div class="masthead-eyebrow">The Field Manual</div>
+      <h1 class="masthead-title">on the Practice of DevOps</h1>
+    </div>
+    <div class="masthead-meta">
+      <span id="today-date">—</span>
+      <span class="sep">·</span>
+      <button class="theme-toggle" id="home-btn" aria-label="Go home" disabled>Home</button>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">Theme</button>
+    </div>
+  </div>
+  <div class="masthead-subrule">
+    <span>Vol. I &nbsp; · &nbsp; First Impression</span>
+    <span id="masthead-status">Reader in Residence</span>
+  </div>
+
+  <div class="home-view" id="home-view">
+    <div class="cover">
+      <div class="cover-vol">A daily reader in <span id="chapter-count-word">twenty-five</span> chapters, in six parts</div>
+      <h2 class="cover-title">Learn the craft <em>slowly</em>,<br/>one chapter at a time.</h2>
+      <p class="cover-sub">A working practitioner's guide to the tools and habits that ship software — written to be read a page at a time, not a syllabus.</p>
+      <div class="cover-rule">
+        <span class="cover-rule-mark">§</span>
+      </div>
+    </div>
+
+    <div class="plate" id="today-plate">
+      <div class="plate-side">
+        <div class="plate-eyebrow">Today's Reading</div>
+        <h3 class="plate-title" id="today-title">—</h3>
+        <p class="plate-tagline" id="today-tag">—</p>
+        <button class="plate-cta" id="today-cta">
+          <span>Open the chapter</span>
+          <span class="arrow">→</span>
+        </button>
+      </div>
+      <div class="plate-side">
+        <div class="plate-eyebrow">Progress in the Manual</div>
+        <div class="plate-stats">
+          <div>
+            <div class="stat-figure"><span id="stat-mastered">0</span><span class="of">/<span class="stat-total">21</span></span></div>
+            <div class="stat-label">Mastered</div>
+          </div>
+          <div>
+            <div class="stat-figure"><span id="stat-visited">0</span><span class="of">/<span class="stat-total">21</span></span></div>
+            <div class="stat-label">Opened</div>
+          </div>
+          <div>
+            <div class="stat-figure" id="stat-streak">0</div>
+            <div class="stat-label">Day Streak</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="def-plate" id="def-plate">
+      <div>
+        <div class="def-eyebrow">Definition of the Day</div>
+        <h3 class="def-term" id="def-term">—</h3>
+      </div>
+      <p class="def-body" id="def-body">—</p>
+      <div class="def-progress"><b id="def-seen">0</b> / <span id="def-total">0</span> encountered</div>
+    </div>
+
+    <div class="section-header">
+      <span class="sec-num">§</span>
+      <h2>The Chapters</h2>
+      <span class="sec-count" id="chapter-count-label">Twenty-five subjects, six parts</span>
+    </div>
+    <div id="chapter-grid"></div>
+
+    <div class="colophon">
+      Read what interests you. <span class="rule-mark">§</span> The order is a suggestion, not a rule.
+    </div>
+  </div>
+
+  <div class="topic-view" id="topic-view">
+    <button class="back-link" id="back-link">← Return to the chapters</button>
+    <div id="topic-content"></div>
+  </div>
+</div>
+
+
+<script src="topics.js"></script>
+<script src="definitions.js"></script>
+<script src="manual.js"></script>
