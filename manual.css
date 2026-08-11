@@ -162,23 +162,23 @@
   /* ---------- Cover ---------- */
   .cover {
     text-align: center;
-    padding: 48px 0 56px;
+    padding: 28px 0 32px;
     border-bottom: 1px solid var(--rule);
-    margin-bottom: 44px;
+    margin-bottom: 32px;
   }
   .cover-vol {
     font-family: var(--font-ui);
-    font-size: 11px;
+    font-size: 10.5px;
     letter-spacing: 0.28em;
     text-transform: uppercase;
     color: var(--ink-3);
-    margin-bottom: 22px;
+    margin-bottom: 16px;
   }
   .cover-title {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(2.4rem, 5.5vw, 4rem);
-    line-height: 1.02;
+    font-size: clamp(1.65rem, 3.4vw, 2.5rem);
+    line-height: 1.05;
     letter-spacing: -0.015em;
     color: var(--ink);
     margin: 0 0 4px;
@@ -191,10 +191,10 @@
   .cover-sub {
     font-family: var(--font-display);
     font-style: italic;
-    font-size: clamp(1.05rem, 1.7vw, 1.25rem);
+    font-size: clamp(0.95rem, 1.4vw, 1.1rem);
     color: var(--ink-2);
-    margin: 12px auto 0;
-    max-width: 620px;
+    margin: 10px auto 0;
+    max-width: 580px;
     text-wrap: balance;
   }
   .cover-rule {
@@ -202,8 +202,8 @@
     justify-content: center;
     align-items: center;
     gap: 12px;
-    margin: 32px auto 0;
-    max-width: 380px;
+    margin: 22px auto 0;
+    max-width: 320px;
   }
   .cover-rule::before,
   .cover-rule::after {
@@ -996,10 +996,37 @@
   .part-header {
     display: flex;
     align-items: baseline;
-    gap: 18px;
+    gap: 12px;
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--rule);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color .12s;
+  }
+  .part-header:hover { border-bottom-color: var(--ink-2); }
+  .part-caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--ink-3);
+    margin-right: 4px;
+    transform-origin: 50% 30%;
+    transition: transform .18s ease;
+    position: relative;
+    top: -2px;
+  }
+  .part-section.collapsed .part-caret {
+    transform: rotate(-90deg);
+  }
+  .part-section.collapsed .grid {
+    display: none;
+  }
+  .part-section.collapsed .part-header {
+    margin-bottom: 0;
+    border-bottom: 1px dotted var(--rule);
   }
   .part-num {
     font-family: var(--font-display);

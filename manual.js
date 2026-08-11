@@ -2,9 +2,11 @@
   const STORAGE_KEY = 'devops_manual_progress_v1';
   const DEF_SEEN_KEY = 'devops_manual_defs_seen_v1';
   const PART_EXAM_KEY = 'devops_manual_part_exams_v1';
+  const FOLDED_KEY = 'devops_manual_folded_v1';
   const state = {
     progress: {},
     partExams: {},         // { [partIdx]: { bestScore, outOf, timesTaken, lastPercent } }
+    folded: {},            // { [partIdx]: true } — parts the user has collapsed
     view: 'home',
     currentTopic: null,
     currentExam: null,     // in-memory only: { partIdx, questions, answers, complete }
@@ -19,12 +21,19 @@
       const raw = localStorage.getItem(PART_EXAM_KEY);
       if (raw) state.partExams = JSON.parse(raw);
     } catch (e) {}
+    try {
+      const raw = localStorage.getItem(FOLDED_KEY);
+      if (raw) state.folded = JSON.parse(raw);
+    } catch (e) {}
   }
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress)); } catch (e) {}
   }
   function savePartExams() {
     try { localStorage.setItem(PART_EXAM_KEY, JSON.stringify(state.partExams)); } catch (e) {}
+  }
+  function saveFolded() {
+    try { localStorage.setItem(FOLDED_KEY, JSON.stringify(state.folded)); } catch (e) {}
   }
   function progressFor(id) {
     if (!state.progress[id]) state.progress[id] = { visited: false, answers: {}, complete: false };
@@ -112,14 +121,29 @@
       if (!chapters.length) return;
       const section = document.createElement('div');
       section.className = 'part-section';
+      if (state.folded[partIdx]) section.classList.add('collapsed');
       section.innerHTML = `
-        <div class="part-header">
+        <div class="part-header" role="button" tabindex="0" aria-expanded="${!state.folded[partIdx]}">
+          <span class="part-caret" aria-hidden="true"></span>
           <span class="part-num">Part ${part.roman}</span>
           <h3 class="part-title">${part.title}</h3>
           <span class="part-desc">${part.desc}</span>
         </div>
         <div class="grid"></div>
       `;
+      const header = section.querySelector('.part-header');
+      const togglePart = () => {
+        const nowCollapsed = !section.classList.contains('collapsed');
+        section.classList.toggle('collapsed');
+        header.setAttribute('aria-expanded', String(!nowCollapsed));
+        if (nowCollapsed) state.folded[partIdx] = true;
+        else delete state.folded[partIdx];
+        saveFolded();
+      };
+      header.addEventListener('click', togglePart);
+      header.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePart(); }
+      });
       const grid = section.querySelector('.grid');
       chapters.forEach(t => {
         const p = state.progress[t.id] || {};
