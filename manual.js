@@ -1,10 +1,13 @@
   // ---------- State ----------
   const STORAGE_KEY = 'devops_manual_progress_v1';
   const DEF_SEEN_KEY = 'devops_manual_defs_seen_v1';
+  const PART_EXAM_KEY = 'devops_manual_part_exams_v1';
   const state = {
     progress: {},
+    partExams: {},         // { [partIdx]: { bestScore, outOf, timesTaken, lastPercent } }
     view: 'home',
     currentTopic: null,
+    currentExam: null,     // in-memory only: { partIdx, questions, answers, complete }
   };
 
   function load() {
@@ -12,13 +15,29 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) state.progress = JSON.parse(raw);
     } catch (e) {}
+    try {
+      const raw = localStorage.getItem(PART_EXAM_KEY);
+      if (raw) state.partExams = JSON.parse(raw);
+    } catch (e) {}
   }
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress)); } catch (e) {}
   }
+  function savePartExams() {
+    try { localStorage.setItem(PART_EXAM_KEY, JSON.stringify(state.partExams)); } catch (e) {}
+  }
   function progressFor(id) {
     if (!state.progress[id]) state.progress[id] = { visited: false, answers: {}, complete: false };
     return state.progress[id];
+  }
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
   }
 
   // ---------- Theme ----------
@@ -125,6 +144,34 @@
         `;
         grid.appendChild(btn);
       });
+
+      // Part exam card
+      const allMastered = chapters.every(c => state.progress[c.id] && state.progress[c.id].complete);
+      const pe = state.partExams[partIdx];
+      const chapterQCount = chapters.reduce((s, c) => s + (c.quiz ? c.quiz.length : 0), 0);
+      const crossCount = (typeof PART_EXAMS !== 'undefined' && PART_EXAMS[partIdx]) ? PART_EXAMS[partIdx].length : 0;
+      const examSize = Math.min(20, chapterQCount + crossCount);
+      const examDot = pe ? (pe.bestScore === pe.outOf ? 'mastered' : 'visited') : '';
+      const bestText = pe ? `Best ${pe.bestScore}/${pe.outOf}` : '';
+      const statusLabel = pe ? `Taken ${pe.timesTaken}×` : (allMastered ? 'Ready when you are' : 'Best after finishing the part');
+      const examBtn = document.createElement('button');
+      examBtn.className = 'exam-card';
+      examBtn.onclick = () => startPartExam(partIdx);
+      examBtn.innerHTML = `
+        <div class="exam-card-row">
+          <span class="exam-label">Exam</span>
+          <span>Part ${part.roman}</span>
+        </div>
+        <div class="exam-title">Cumulative Examination</div>
+        <div class="exam-tag">${examSize} questions — cross-chapter scenarios plus a sampling from every chapter in Part ${part.roman}. Order and options randomised.</div>
+        <div class="exam-status">
+          <span class="chapter-dot ${examDot}"></span>
+          <span>${statusLabel}</span>
+          ${bestText ? `<span class="best">${bestText}</span>` : ''}
+        </div>
+      `;
+      grid.appendChild(examBtn);
+
       container.appendChild(section);
     });
   }
@@ -182,7 +229,7 @@
     return s;
   }
 
-  function openTopic(id) {
+  function openTopic(id, opts = {}) {
     state.currentTopic = id;
     state.view = 'topic';
     const t = TOPICS.find(x => x.id === id);
@@ -193,7 +240,9 @@
     document.getElementById('home-view').classList.add('hidden');
     document.getElementById('topic-view').classList.add('active');
     updateHomeBtn();
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (!opts.preserveScroll) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
 
     const el = document.getElementById('topic-content');
     const conceptsHtml = t.concepts.map(([term, def]) =>
@@ -315,7 +364,9 @@
       p.complete = true;
     }
     save();
-    openTopic(topicId);
+    const y = window.scrollY;
+    openTopic(topicId, { preserveScroll: true });
+    window.scrollTo({ top: y, behavior: 'instant' });
   }
 
   function resetQuiz(topicId) {
@@ -329,11 +380,206 @@
   function goHome() {
     state.view = 'home';
     state.currentTopic = null;
+    state.currentExam = null;
     document.getElementById('topic-view').classList.remove('active');
     document.getElementById('home-view').classList.remove('hidden');
     renderHome();
     updateHomeBtn();
     window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  // ---------- Part Examinations ----------
+  function startPartExam(partIdx) {
+    const partChapters = TOPICS.filter(t => t.part === partIdx);
+    if (!partChapters.length) return;
+
+    // Pool 1: chapter quiz questions from this part
+    const chapterPool = [];
+    partChapters.forEach(t => {
+      (t.quiz || []).forEach(q => {
+        chapterPool.push({
+          kind: 'chapter',
+          chapterId: t.id, chapterNum: t.num, chapterTitle: t.title,
+          q: q.q, options: q.options, correct: q.correct, why: q.why,
+        });
+      });
+    });
+
+    // Pool 2: exam-only cross-chapter scenario questions
+    const examOnlyPool = (typeof PART_EXAMS !== 'undefined' && PART_EXAMS[partIdx] ? PART_EXAMS[partIdx] : []).map(q => ({
+      kind: 'crosschapter',
+      chapterId: '__cross__', chapterNum: '—', chapterTitle: 'Cross-chapter scenario',
+      q: q.q, options: q.options, correct: q.correct, why: q.why,
+    }));
+
+    // Blend: aim for ~8 exam-only + ~12 chapter, capped at 20 total, always include ALL exam-only if possible
+    const TARGET_TOTAL = 20;
+    const takeExamOnly = Math.min(examOnlyPool.length, TARGET_TOTAL);
+    const takeChapter = Math.min(chapterPool.length, TARGET_TOTAL - takeExamOnly);
+    const chosen = [
+      ...shuffle(examOnlyPool).slice(0, takeExamOnly),
+      ...shuffle(chapterPool).slice(0, takeChapter),
+    ];
+
+    const questions = shuffle(chosen).map(src => {
+      const orderIdxs = shuffle(src.options.map((_, i) => i));
+      return {
+        kind: src.kind,
+        chapterId: src.chapterId,
+        chapterNum: src.chapterNum,
+        chapterTitle: src.chapterTitle,
+        q: src.q,
+        options: orderIdxs.map(i => src.options[i]),
+        correct: orderIdxs.indexOf(src.correct),
+        why: src.why,
+      };
+    });
+
+    state.currentExam = { partIdx, questions, answers: {}, complete: false };
+    state.currentTopic = null;
+    state.view = 'exam';
+    document.getElementById('home-view').classList.add('hidden');
+    document.getElementById('topic-view').classList.add('active');
+    updateHomeBtn();
+    renderExam();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function renderExam() {
+    const exam = state.currentExam;
+    if (!exam) return;
+    const part = PARTS[exam.partIdx];
+    const total = exam.questions.length;
+    const answered = Object.keys(exam.answers).length;
+    const score = exam.questions.reduce((s, q, i) => s + (exam.answers[i] === q.correct ? 1 : 0), 0);
+    const complete = answered === total;
+    const percent = total > 0 ? Math.round(score / total * 100) : 0;
+
+    const byChapter = {};
+    exam.questions.forEach((q, i) => {
+      if (!byChapter[q.chapterId]) {
+        byChapter[q.chapterId] = { title: q.chapterTitle, num: q.chapterNum, right: 0, total: 0 };
+      }
+      byChapter[q.chapterId].total++;
+      if (exam.answers[i] === q.correct) byChapter[q.chapterId].right++;
+    });
+
+    const questionsHtml = exam.questions.map((q, i) => {
+      const ans = exam.answers[i];
+      const optHtml = q.options.map((opt, oi) => {
+        let cls = 'q-option';
+        let mark = '';
+        if (ans !== undefined) {
+          if (oi === q.correct) { cls += ' correct'; mark = '<span class="mark">✓</span>'; }
+          else if (oi === ans) { cls += ' wrong'; mark = '<span class="mark">✕</span>'; }
+        }
+        return `
+          <button class="${cls}" ${ans !== undefined ? 'disabled' : ''}
+                  onclick="answerExamQuestion(${i}, ${oi})">
+            <span class="letter">${String.fromCharCode(97 + oi)}.</span>
+            <span>${opt}</span>
+            ${mark}
+          </button>
+        `;
+      }).join('');
+      const explCls = ans !== undefined ? 'q-explanation shown' : 'q-explanation';
+      const sourceLabel = q.kind === 'crosschapter'
+        ? 'Cross-chapter · Scenario'
+        : `Ch. ${q.chapterNum} · ${q.chapterTitle}`;
+      return `
+        <div class="question">
+          <div class="q-label">
+            Question <b>${String(i + 1).padStart(2, '0')}</b> of ${String(total).padStart(2, '0')}
+            &nbsp;·&nbsp; <span class="q-source">${sourceLabel}</span>
+          </div>
+          <div class="q-text">${q.q}</div>
+          <div class="q-options">${optHtml}</div>
+          <div class="${explCls}">
+            <strong>${ans === q.correct ? 'Correct.' : ans !== undefined ? 'Not quite.' : ''}</strong>
+            ${q.why}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const verdict = !complete ? '' :
+      percent >= 90 ? '<span class="quiz-verdict excellent">Excellent. This part is truly in.</span>' :
+      percent >= 70 ? '<span class="quiz-verdict excellent">Solid pass — comfortable with the material.</span>' :
+      percent >= 50 ? '<span class="quiz-verdict partial">Enough to build on. Revisit the weakest chapters below.</span>' :
+      '<span class="quiz-verdict partial">Worth another pass through the part before moving on.</span>';
+
+    const breakdownRows = Object.entries(byChapter).map(([id, c]) => ({ id, ...c }));
+    // Sort: real chapters by num ascending, cross-chapter at the end
+    breakdownRows.sort((a, b) => {
+      if (a.id === '__cross__') return 1;
+      if (b.id === '__cross__') return -1;
+      return a.num.localeCompare(b.num);
+    });
+    const breakdownHtml = complete ? `
+      <div class="exam-breakdown">
+        <h3>Breakdown by chapter</h3>
+        <ul class="breakdown-list">
+          ${breakdownRows.map(c => {
+            const pct = c.right / c.total;
+            const cls = pct === 1 ? 'perfect' : pct < 0.5 ? 'weak' : '';
+            const label = c.id === '__cross__'
+              ? '<em>Cross-chapter scenarios</em>'
+              : `Ch. ${c.num} · ${c.title}`;
+            return `<li><span class="brk-ch">${label}</span> <span class="brk-score ${cls}">${c.right}/${c.total}</span></li>`;
+          }).join('')}
+        </ul>
+      </div>
+    ` : '';
+
+    document.getElementById('topic-content').innerHTML = `
+      <div class="topic-head">
+        <div class="topic-eyebrow"><span>Part ${part.roman}</span> <span>·</span> <span>Cumulative Examination</span></div>
+        <h1 class="topic-title">${part.title}</h1>
+        <p class="topic-lede">${total} questions mixed from every chapter in Part ${part.roman}, in random order — the exam that ties it all together.</p>
+      </div>
+
+      <div class="topic-section">
+        <div class="quiz">
+          <div class="quiz-heading">
+            <h3>Examination</h3>
+            <div class="quiz-score">Score <b>${score}</b> / ${total} &nbsp;·&nbsp; ${answered} of ${total} answered</div>
+          </div>
+          ${questionsHtml}
+          ${breakdownHtml}
+          <div class="quiz-footer">
+            <div>${verdict}</div>
+            <button class="quiz-reset" onclick="retryPartExam(${exam.partIdx})">Retry with new mix</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function answerExamQuestion(qIdx, optIdx) {
+    const exam = state.currentExam;
+    if (!exam || exam.answers[qIdx] !== undefined) return;
+    exam.answers[qIdx] = optIdx;
+    const total = exam.questions.length;
+    const answered = Object.keys(exam.answers).length;
+    if (answered === total) {
+      exam.complete = true;
+      const score = exam.questions.reduce((s, q, i) => s + (exam.answers[i] === q.correct ? 1 : 0), 0);
+      const prev = state.partExams[exam.partIdx] || { bestScore: 0, outOf: total, timesTaken: 0 };
+      state.partExams[exam.partIdx] = {
+        bestScore: Math.max(prev.bestScore, score),
+        outOf: total,
+        timesTaken: (prev.timesTaken || 0) + 1,
+        lastPercent: Math.round(score / total * 100),
+      };
+      savePartExams();
+    }
+    const y = window.scrollY;
+    renderExam();
+    window.scrollTo({ top: y, behavior: 'instant' });
+  }
+
+  function retryPartExam(partIdx) {
+    startPartExam(partIdx);
   }
 
   function updateHomeBtn() {
@@ -344,6 +590,10 @@
       btn.removeAttribute('disabled');
     }
   }
+
+  window.startPartExam = startPartExam;
+  window.answerExamQuestion = answerExamQuestion;
+  window.retryPartExam = retryPartExam;
 
   // ---------- Boot ----------
   window.answerQuestion = answerQuestion;
