@@ -124,7 +124,7 @@
       if (state.folded[partIdx]) section.classList.add('collapsed');
       section.innerHTML = `
         <div class="part-header" role="button" tabindex="0" aria-expanded="${!state.folded[partIdx]}">
-          <span class="part-caret" aria-hidden="true"></span>
+          <span class="part-caret" aria-hidden="true">▾</span>
           <span class="part-num">Part ${part.roman}</span>
           <h3 class="part-title">${part.title}</h3>
           <span class="part-desc">${part.desc}</span>
