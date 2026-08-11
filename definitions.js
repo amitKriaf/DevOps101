@@ -75,5 +75,9 @@
     ['phpMyAdmin', 'A long-standing web UI for administering MySQL/MariaDB databases.'],
     ['Caddy', 'A modern reverse-proxy server whose signature feature is automatic HTTPS via Let\'s Encrypt.'],
     ['SNI', 'Server Name Indication — a TLS extension letting a client tell the server which hostname it wants during the handshake.'],
+    ['Mount', 'Attaching a filesystem to a directory in the unified tree. <code>mount /dev/sdb1 /data</code> makes that disk visible under <code>/data</code>. <code>/etc/fstab</code> makes mounts persist across reboots.'],
+    ['Symlink', 'A symbolic link — a small file containing a path pointing at another path, resolved at access time. <code>ln -s target link</code>. Breaks if the target moves. The nginx <code>sites-enabled → sites-available</code> pattern is symlinks.'],
+    ['Hard link', 'A second directory entry for the same inode — same file, two names. <code>ln target link</code>. Cannot cross filesystems, cannot link directories. Deleting one leaves the other working.'],
+    ['Inode', 'The Linux filesystem\'s internal record for a file — permissions, timestamps, size, block pointers. Filenames are just directory entries pointing to inodes. Run out of inodes and you can\'t create files even with disk space free. <code>ls -i</code> shows them; <code>df -i</code> shows inode usage.'],
   ];
 
