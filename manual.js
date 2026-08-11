@@ -10,6 +10,7 @@
     view: 'home',
     currentTopic: null,
     currentExam: null,     // in-memory only: { partIdx, questions, answers, complete }
+    user: null,            // Supabase user object when signed in; null otherwise
   };
 
   function load() {
@@ -28,12 +29,15 @@
   }
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress)); } catch (e) {}
+    scheduleCloudSave();
   }
   function savePartExams() {
     try { localStorage.setItem(PART_EXAM_KEY, JSON.stringify(state.partExams)); } catch (e) {}
+    scheduleCloudSave();
   }
   function saveFolded() {
     try { localStorage.setItem(FOLDED_KEY, JSON.stringify(state.folded)); } catch (e) {}
+    scheduleCloudSave();
   }
   function progressFor(id) {
     if (!state.progress[id]) state.progress[id] = { visited: false, answers: {}, complete: false };
@@ -619,6 +623,171 @@
   window.answerExamQuestion = answerExamQuestion;
   window.retryPartExam = retryPartExam;
 
+  // ---------- Cloud sync (Supabase) ----------
+  const supa = initSupabase();
+
+  function initSupabase() {
+    const cfg = window.APP_CONFIG || {};
+    const url = cfg.SUPABASE_URL || '';
+    const key = cfg.SUPABASE_ANON_KEY || '';
+    if (!url || !key || url.startsWith('https://YOUR-') || key.startsWith('YOUR-')) return null;
+    if (typeof supabase === 'undefined' || !supabase.createClient) return null;
+    try {
+      return supabase.createClient(url, key, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+      });
+    } catch (e) {
+      console.error('Supabase init failed:', e);
+      return null;
+    }
+  }
+
+  let authMode = 'signin';
+  let cloudSaveTimer = null;
+
+  async function initAuth() {
+    if (!supa) return;
+    document.getElementById('auth-signin-btn').hidden = false;
+    document.getElementById('auth-signin-btn').addEventListener('click', openAuthModal);
+    document.getElementById('auth-signout-btn').addEventListener('click', signOut);
+    document.getElementById('auth-close').addEventListener('click', closeAuthModal);
+    document.getElementById('auth-backdrop').addEventListener('click', closeAuthModal);
+    document.getElementById('auth-tab-signin').addEventListener('click', () => setAuthMode('signin'));
+    document.getElementById('auth-tab-signup').addEventListener('click', () => setAuthMode('signup'));
+    document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !document.getElementById('auth-modal').hidden) closeAuthModal();
+    });
+
+    try {
+      const { data: { session } } = await supa.auth.getSession();
+      if (session && session.user) await onAuthSignedIn(session.user);
+    } catch (e) { console.error('getSession failed:', e); }
+
+    supa.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session && session.user) onAuthSignedIn(session.user);
+      else if (event === 'SIGNED_OUT') onAuthSignedOut();
+    });
+  }
+
+  function setAuthMode(mode) {
+    authMode = mode;
+    const isSignin = mode === 'signin';
+    document.getElementById('auth-tab-signin').classList.toggle('active', isSignin);
+    document.getElementById('auth-tab-signup').classList.toggle('active', !isSignin);
+    document.getElementById('auth-tab-signin').setAttribute('aria-selected', String(isSignin));
+    document.getElementById('auth-tab-signup').setAttribute('aria-selected', String(!isSignin));
+    document.getElementById('auth-title').textContent = isSignin ? 'Sign in' : 'Create account';
+    document.getElementById('auth-submit').textContent = isSignin ? 'Sign in →' : 'Create account →';
+    document.getElementById('auth-password').setAttribute('autocomplete', isSignin ? 'current-password' : 'new-password');
+    document.getElementById('auth-error').textContent = '';
+  }
+
+  function openAuthModal() {
+    document.getElementById('auth-modal').hidden = false;
+    setTimeout(() => document.getElementById('auth-email').focus(), 60);
+  }
+  function closeAuthModal() {
+    document.getElementById('auth-modal').hidden = true;
+    document.getElementById('auth-error').textContent = '';
+  }
+
+  async function handleAuthSubmit(e) {
+    e.preventDefault();
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const errorEl = document.getElementById('auth-error');
+    const submitBtn = document.getElementById('auth-submit');
+    errorEl.textContent = '';
+    submitBtn.disabled = true;
+    try {
+      if (authMode === 'signup') {
+        const { error } = await supa.auth.signUp({ email, password });
+        if (error) throw error;
+      } else {
+        const { error } = await supa.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      }
+      closeAuthModal();
+    } catch (err) {
+      errorEl.textContent = (err && err.message) ? err.message : String(err);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
+  async function signOut() {
+    if (!supa) return;
+    try { await supa.auth.signOut(); } catch (e) { console.error(e); }
+  }
+
+  async function onAuthSignedIn(user) {
+    state.user = user;
+    document.getElementById('auth-signin-btn').hidden = true;
+    const info = document.getElementById('auth-user-info');
+    info.hidden = false;
+    document.getElementById('auth-user-email').textContent = user.email || 'signed in';
+
+    let data = null, error = null;
+    try {
+      const res = await supa.from('progress').select('*').eq('user_id', user.id).maybeSingle();
+      data = res.data; error = res.error;
+    } catch (e) { error = e; }
+    if (error) { console.error('cloud load error:', error); return; }
+
+    const localHasData =
+      Object.keys(state.progress).length > 0 ||
+      Object.keys(state.partExams).length > 0;
+
+    if (!data) {
+      // New cloud account — offer to import local
+      if (localHasData && window.confirm('Import your existing local progress into your new cloud account?')) {
+        await cloudSaveNow();
+      } else {
+        state.progress = {};
+        state.partExams = {};
+        state.folded = {};
+        try { await supa.from('progress').insert({ user_id: user.id }); } catch (e) {}
+      }
+    } else {
+      state.progress   = data.progress   || {};
+      state.partExams  = data.part_exams || {};
+      state.folded     = data.folded     || {};
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress));
+        localStorage.setItem(PART_EXAM_KEY, JSON.stringify(state.partExams));
+        localStorage.setItem(FOLDED_KEY, JSON.stringify(state.folded));
+      } catch (e) {}
+    }
+    if (state.view === 'home') renderHome();
+  }
+
+  function onAuthSignedOut() {
+    state.user = null;
+    document.getElementById('auth-signin-btn').hidden = false;
+    document.getElementById('auth-user-info').hidden = true;
+    document.getElementById('auth-user-email').textContent = '';
+    // localStorage keeps the last known state; app continues in local mode.
+  }
+
+  async function cloudSaveNow() {
+    if (!supa || !state.user) return;
+    try {
+      const { error } = await supa.from('progress').upsert({
+        user_id: state.user.id,
+        progress: state.progress,
+        part_exams: state.partExams,
+        folded: state.folded,
+      });
+      if (error) console.error('cloud save error:', error);
+    } catch (e) { console.error('cloud save exception:', e); }
+  }
+  function scheduleCloudSave() {
+    if (!supa || !state.user) return;
+    if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(cloudSaveNow, 800);
+  }
+
   // ---------- Boot ----------
   window.answerQuestion = answerQuestion;
   window.resetQuiz = resetQuiz;
@@ -631,3 +800,4 @@
   document.getElementById('home-btn').addEventListener('click', goHome);
   renderHome();
   updateHomeBtn();
+  initAuth();
