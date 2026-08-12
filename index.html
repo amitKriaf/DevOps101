@@ -2,7 +2,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antic+Slab&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..900,0..1,0..1&family=JetBrains+Mono:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="manual.css?v=26">
+<link rel="stylesheet" href="manual.css?v=27">
 
 <!--
   DIRECTION CONTRACT — Operator's Manual (Impeccable seed 5f25d89b, mode Read).
@@ -47,70 +47,60 @@
     <div class="home-view" id="home-view">
 
       <section class="loop-hero" aria-labelledby="loop-caption">
-        <svg class="loop-svg" viewBox="0 0 760 340" role="img" aria-labelledby="loop-title">
+        <svg class="loop-svg" viewBox="0 0 780 340" role="img" aria-labelledby="loop-title">
           <title id="loop-title">DevOps continuous cycle — plan, code, build, test on the Dev side; release, deploy, operate, monitor on the Ops side</title>
 
-          <!-- Left DEV ring -->
-          <g class="ring ring-dev">
-            <circle cx="240" cy="170" r="120" fill="none" stroke="currentColor" stroke-width="34"/>
-            <!-- Segment divider notches at 4 compass points -->
-            <g stroke="var(--ground)" stroke-width="4">
-              <line x1="240" y1="30"  x2="240" y2="64"/>
-              <line x1="240" y1="276" x2="240" y2="310"/>
-              <line x1="100" y1="170" x2="134" y2="170"/>
-              <line x1="346" y1="170" x2="380" y2="170"/>
-            </g>
-            <!-- 4 labels: two on the ring (cutout), two outside (ink + tick) -->
-            <text x="240" y="56"  text-anchor="middle" class="stage-label" data-stage="code">code</text>
-            <text x="240" y="296" text-anchor="middle" class="stage-label" data-stage="test">test</text>
-            <!-- build (left, outside) -->
-            <text x="70"  y="174" text-anchor="middle" class="stage-label-out" data-stage="build">build</text>
-            <line x1="95"  y1="170" x2="112" y2="170" class="stage-tick" data-stage="build"/>
-            <!-- plan (diagonal upper-right on ring) -->
-            <text x="325" y="88" text-anchor="middle" class="stage-label" transform="rotate(-40 325 88)" data-stage="plan">plan</text>
-          </g>
+          <defs>
+            <!-- The two loops of the lemniscate — they SHARE a crossing point at (390, 170).
+                 Each is drawn as a closed cubic Bezier — traced clockwise so textPath text
+                 reads right-side-up on the top arc. -->
+            <path id="loopDev" d="M 390 170 C 320 40, 90 40, 90 170 C 90 300, 320 300, 390 170 Z"/>
+            <path id="loopOps" d="M 390 170 C 460 40, 690 40, 690 170 C 690 300, 460 300, 390 170 Z"/>
+          </defs>
 
-          <!-- Right OPS ring -->
-          <g class="ring ring-ops">
-            <circle cx="520" cy="170" r="120" fill="none" stroke="currentColor" stroke-width="34"/>
-            <g stroke="var(--ground)" stroke-width="4">
-              <line x1="520" y1="30"  x2="520" y2="64"/>
-              <line x1="520" y1="276" x2="520" y2="310"/>
-              <line x1="380" y1="170" x2="414" y2="170"/>
-              <line x1="626" y1="170" x2="660" y2="170"/>
-            </g>
-            <text x="520" y="56"  text-anchor="middle" class="stage-label" data-stage="deploy">deploy</text>
-            <text x="520" y="296" text-anchor="middle" class="stage-label" data-stage="monitor">monitor</text>
-            <!-- release (diagonal upper-left on ring) -->
-            <text x="435" y="88" text-anchor="middle" class="stage-label" transform="rotate(40 435 88)" data-stage="release">release</text>
-            <!-- operate (right, outside) -->
-            <text x="700" y="174" text-anchor="middle" class="stage-label-out" data-stage="operate">operate</text>
-            <line x1="648" y1="170" x2="665" y2="170" class="stage-tick" data-stage="operate"/>
-          </g>
+          <!-- The two thick rings.  Both share (390, 170) — where they visually cross. -->
+          <use href="#loopDev" class="ring-arc ring-dev"/>
+          <use href="#loopOps" class="ring-arc ring-ops"/>
 
-          <!-- DEV / OPS centre wordmarks -->
+          <!-- Stage labels flow along each loop via textPath.
+               startOffset% is measured along the path length; the top arc runs from 0→50% of each. -->
+          <text class="stage-flow">
+            <textPath href="#loopDev" startOffset="8%">plan</textPath>
+          </text>
+          <text class="stage-flow">
+            <textPath href="#loopDev" startOffset="25%">code</textPath>
+          </text>
+          <text class="stage-flow">
+            <textPath href="#loopDev" startOffset="50%">build</textPath>
+          </text>
+          <text class="stage-flow">
+            <textPath href="#loopDev" startOffset="75%">test</textPath>
+          </text>
+
+          <text class="stage-flow">
+            <textPath href="#loopOps" startOffset="25%">deploy</textPath>
+          </text>
+          <text class="stage-flow">
+            <textPath href="#loopOps" startOffset="50%">operate</textPath>
+          </text>
+          <text class="stage-flow">
+            <textPath href="#loopOps" startOffset="75%">monitor</textPath>
+          </text>
+          <text class="stage-flow">
+            <textPath href="#loopOps" startOffset="92%">release</textPath>
+          </text>
+
+          <!-- DEV / OPS centre wordmarks — placed in each loop's interior -->
           <text x="240" y="188" text-anchor="middle" class="loop-word">DEV</text>
-          <text x="520" y="188" text-anchor="middle" class="loop-word">OPS</text>
+          <text x="540" y="188" text-anchor="middle" class="loop-word">OPS</text>
 
-          <!-- A dot orbits the full figure-8 path -->
-          <circle class="loop-orbit" r="6" fill="var(--accent)">
+          <!-- A dot orbits the full figure-8, crossing through (390, 170) each cycle -->
+          <circle class="loop-orbit" r="5.5" fill="var(--accent)">
             <animateMotion dur="14s" repeatCount="indefinite" rotate="auto"
-              path="M 360 170 A 120 120 0 0 1 240 50 A 120 120 0 0 1 120 170 A 120 120 0 0 1 240 290 A 120 120 0 0 1 360 170 A 120 120 0 0 0 520 50 A 120 120 0 0 0 640 170 A 120 120 0 0 0 520 290 A 120 120 0 0 0 360 170 Z"/>
+              path="M 390 170 C 320 40, 90 40, 90 170 C 90 300, 320 300, 390 170 C 460 40, 690 40, 690 170 C 690 300, 460 300, 390 170 Z"/>
           </circle>
-
-          <!-- Pulse markers at each stage that light in sequence -->
-          <g class="stage-pulses">
-            <circle class="stage-pulse" data-stage="code"    cx="240" cy="50"  r="7"/>
-            <circle class="stage-pulse" data-stage="plan"    cx="330" cy="85"  r="7"/>
-            <circle class="stage-pulse" data-stage="release" cx="430" cy="85"  r="7"/>
-            <circle class="stage-pulse" data-stage="deploy"  cx="520" cy="50"  r="7"/>
-            <circle class="stage-pulse" data-stage="operate" cx="640" cy="170" r="7"/>
-            <circle class="stage-pulse" data-stage="monitor" cx="520" cy="290" r="7"/>
-            <circle class="stage-pulse" data-stage="test"    cx="240" cy="290" r="7"/>
-            <circle class="stage-pulse" data-stage="build"   cx="120" cy="170" r="7"/>
-          </g>
         </svg>
-        <div id="loop-caption" class="loop-caption">The continuous cycle — plan · code · build · test  ·  release · deploy · operate · monitor</div>
+        <div id="loop-caption" class="loop-caption">The continuous cycle — plan · code · build · test → release · deploy · operate · monitor</div>
       </section>
 
       <section class="plate plate-today" id="today-plate">
@@ -202,8 +192,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=26"></script>
-<script src="topics.js?v=26"></script>
-<script src="definitions.js?v=26"></script>
-<script src="part-exams.js?v=26"></script>
-<script src="manual.js?v=26"></script>
+<script src="config.js?v=27"></script>
+<script src="topics.js?v=27"></script>
+<script src="definitions.js?v=27"></script>
+<script src="part-exams.js?v=27"></script>
+<script src="manual.js?v=27"></script>

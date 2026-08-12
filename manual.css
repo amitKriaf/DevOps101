@@ -273,31 +273,27 @@ button {
   display: inline-block;
   overflow: visible;
 }
-.ring-dev { color: var(--accent); }
-.ring-ops { color: var(--danger); }
-.ring circle {
-  transition: stroke 300ms ease;
+/* Two loop paths — each stroked as a thick ring. They share the point (390,170) so their
+   strokes visually intersect at the middle, producing a genuine figure-8. */
+.ring-arc {
+  fill: none;
+  stroke-width: 38;
+  stroke-linejoin: round;
 }
-.stage-label {
+.ring-dev { stroke: var(--accent); }
+.ring-ops { stroke: var(--danger); }
+
+/* Stage labels ride along each loop via <textPath>. */
+.stage-flow {
   font-family: var(--font-mono);
   font-variation-settings: var(--rec-mono);
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   fill: var(--ground);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
 }
-.stage-label-out {
-  font-family: var(--font-mono);
-  font-variation-settings: var(--rec-mono);
-  font-size: 12px;
-  font-weight: 700;
-  fill: var(--ink);
-  letter-spacing: 0.02em;
-}
-.stage-tick {
-  stroke: var(--ink-2);
-  stroke-width: 1.2;
-}
+
 .loop-word {
   font-family: var(--font-headline);
   font-weight: 400;
@@ -306,36 +302,10 @@ button {
   fill: var(--ink);
 }
 .loop-orbit {
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 55%, transparent));
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 65%, transparent));
 }
-
-/* Stage pulses — each stage lights up in sequence as the dot passes.
-   8 stages @ 14s cycle = ~1.75s each; each pulse animates on delay. */
-.stage-pulse {
-  fill: var(--accent);
-  opacity: 0;
-  transform-origin: center;
-  animation: stage-pulse 14s ease-in-out infinite;
-}
-.stage-pulse[data-stage="code"]    { animation-delay: 0s; }
-.stage-pulse[data-stage="plan"]    { animation-delay: 1.75s; }
-.stage-pulse[data-stage="release"] { animation-delay: 3.5s; }
-.stage-pulse[data-stage="deploy"]  { animation-delay: 5.25s; }
-.stage-pulse[data-stage="operate"] { animation-delay: 7s; }
-.stage-pulse[data-stage="monitor"] { animation-delay: 8.75s; }
-.stage-pulse[data-stage="test"]    { animation-delay: 10.5s; }
-.stage-pulse[data-stage="build"]   { animation-delay: 12.25s; }
-
-@keyframes stage-pulse {
-  0%   { opacity: 0; r: 4; }
-  4%   { opacity: 0.9; r: 12; }
-  8%   { opacity: 0.7; r: 8; }
-  12%  { opacity: 0; r: 4; }
-  100% { opacity: 0; r: 4; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .stage-pulse { animation: none; opacity: 0; }
+  .loop-orbit animateMotion { display: none; }
 }
 .loop-caption {
   font-family: var(--font-body);
