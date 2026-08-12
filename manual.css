@@ -39,44 +39,44 @@
   color-scheme: light;
 }
 
-/* Dark theme — warm charcoal (sepia black) with blue-green accent */
+/* Dark theme — deep coffee brown with blue-green accent */
 :root:not([data-theme="light"]) {
   @media (prefers-color-scheme: dark) {
-    --ground:        #17130E;   /* warm charcoal — dark coffee, not near-black */
-    --surface:       #211C15;   /* one step up, still warm */
-    --surface-2:     #2C2519;
-    --ink:           #EDE6D0;   /* slightly warmer cream text */
-    --ink-2:         #A19A88;
-    --ink-3:         #6A6455;
-    --rule:          #332C21;
-    --rule-hair:     #241F17;
-    --rule-strong:   #EDE6D0;
-    --accent:        #34C0A9;   /* teal — a touch brighter to survive on warm ground */
-    --accent-ink:    #0A211D;
-    --accent-quiet:  #142822;
+    --ground:        #241A0E;   /* deep coffee — old leather, well-thumbed manual */
+    --surface:       #2E2416;
+    --surface-2:     #38301E;
+    --ink:           #F1E7CE;   /* warm cream on brown */
+    --ink-2:         #A99E82;
+    --ink-3:         #71674F;
+    --rule:          #3B3020;
+    --rule-hair:     #2A2114;
+    --rule-strong:   #F1E7CE;
+    --accent:        #3DC7B1;   /* teal, slightly brightened for warmer ground */
+    --accent-ink:    #0A241F;
+    --accent-quiet:  #163028;
     --danger:        #F5C400;
-    --success:       #8FB569;
-    --shadow-lift:   0 1px 0 rgba(0, 0, 0, 0.4), 0 12px 32px -16px rgba(0, 0, 0, 0.7);
+    --success:       #9AB86A;
+    --shadow-lift:   0 1px 0 rgba(0, 0, 0, 0.45), 0 12px 32px -16px rgba(0, 0, 0, 0.75);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --ground:        #17130E;
-  --surface:       #211C15;
-  --surface-2:     #2C2519;
-  --ink:           #EDE6D0;
-  --ink-2:         #A19A88;
-  --ink-3:         #6A6455;
-  --rule:          #332C21;
-  --rule-hair:     #241F17;
-  --rule-strong:   #EDE6D0;
-  --accent:        #34C0A9;
-  --accent-ink:    #0A211D;
-  --accent-quiet:  #142822;
+  --ground:        #241A0E;
+  --surface:       #2E2416;
+  --surface-2:     #38301E;
+  --ink:           #F1E7CE;
+  --ink-2:         #A99E82;
+  --ink-3:         #71674F;
+  --rule:          #3B3020;
+  --rule-hair:     #2A2114;
+  --rule-strong:   #F1E7CE;
+  --accent:        #3DC7B1;
+  --accent-ink:    #0A241F;
+  --accent-quiet:  #163028;
   --danger:        #F5C400;
-  --success:       #8FB569;
-  --shadow-lift:   0 1px 0 rgba(0, 0, 0, 0.4), 0 12px 32px -16px rgba(0, 0, 0, 0.7);
+  --success:       #9AB86A;
+  --shadow-lift:   0 1px 0 rgba(0, 0, 0, 0.45), 0 12px 32px -16px rgba(0, 0, 0, 0.75);
   color-scheme: dark;
 }
 
@@ -702,9 +702,27 @@ button {
 
 /* ---------- Topic (procedure) view ---------- */
 
-.topic-view { display: none; }
+.topic-view {
+  display: none;
+  max-width: 760px;
+  margin: 0 auto;
+}
 .topic-view.active { display: block; }
 .home-view.hidden { display: none; }
+
+/* Every reading element inside topic-view is centered within the reading column. */
+.topic-view .topic-head,
+.topic-view .topic-section,
+.topic-view .quiz,
+.topic-view .quiz-gate {
+  margin-left: auto;
+  margin-right: auto;
+}
+.topic-view .topic-title,
+.topic-view .topic-lede {
+  margin-left: 0;
+  margin-right: auto;
+}
 
 .back-link {
   background: transparent;
