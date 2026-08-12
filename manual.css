@@ -120,11 +120,13 @@ body::before {
 :root:not([data-theme="light"]) body::before,
 :root[data-theme="dark"] body::before {
   background:
-    radial-gradient(ellipse 60vw 45vw at 8% 0%,   rgba(56, 195, 172, 0.12), transparent 62%),
-    radial-gradient(ellipse 55vw 40vw at 100% 8%, rgba(143, 128, 195, 0.14), transparent 62%),
-    radial-gradient(ellipse 50vw 40vw at 92% 100%, rgba(217, 118, 152, 0.10), transparent 62%),
-    radial-gradient(ellipse 55vw 40vw at 0% 100%, rgba(224, 168, 112, 0.10), transparent 62%);
+    radial-gradient(ellipse 65vw 50vw at 5% -5%,   rgba(72, 216, 190, 0.28), transparent 62%),
+    radial-gradient(ellipse 60vw 45vw at 100% 5%,  rgba(160, 128, 220, 0.30), transparent 62%),
+    radial-gradient(ellipse 55vw 45vw at 95% 100%, rgba(230, 132, 168, 0.22), transparent 62%),
+    radial-gradient(ellipse 60vw 45vw at -5% 100%, rgba(232, 176, 108, 0.22), transparent 62%),
+    radial-gradient(ellipse 40vw 30vw at 50% 50%,  rgba(120, 168, 220, 0.10), transparent 65%);
 }
+
 
 ::selection { background: var(--accent); color: var(--accent-ink); }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -248,7 +250,7 @@ button {
    width so the rule beneath the header aligns with content below. */
 body.reading .masthead,
 body.reading .ctrl-bar {
-  max-width: 760px;
+  max-width: 920px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -520,14 +522,11 @@ body.reading .ctrl-bar {
   padding: 26px clamp(20px, 3vw, 40px);
   gap: 32px;
   background-color: var(--ground);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14'><circle cx='7' cy='7' r='0.9' fill='rgba(28,20,10,0.18)'/></svg>");
-  background-repeat: repeat;
+  background-image:
+    radial-gradient(ellipse 60% 120% at 100% 50%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+    radial-gradient(ellipse 40% 90% at 0% 100%, color-mix(in srgb, var(--ink) 6%, transparent), transparent 65%);
   border-color: var(--rule-hair);
   margin-bottom: 56px;
-}
-:root:not([data-theme="light"]) .plate-def,
-:root[data-theme="dark"] .plate-def {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14'><circle cx='7' cy='7' r='0.9' fill='rgba(255,240,220,0.14)'/></svg>");
 }
 .plate-def > * { padding: 0; }
 @media (max-width: 720px) {
@@ -823,7 +822,7 @@ body.reading .ctrl-bar {
 
 .topic-view {
   display: none;
-  max-width: 760px;
+  max-width: 920px;
   margin: 0 auto;
 }
 .topic-view.active { display: block; }
@@ -904,7 +903,7 @@ body.reading .ctrl-bar {
   max-width: 46ch;
 }
 
-.topic-section { margin-bottom: 48px; max-width: 68ch; }
+.topic-section { margin-bottom: 48px; max-width: 80ch; }
 .topic-section h3 {
   font-family: var(--font-display);
   font-variation-settings: "wght" 700, var(--rec-sans-tight);
@@ -928,7 +927,7 @@ body.reading .ctrl-bar {
 }
 .prose p {
   margin: 0 0 16px;
-  max-width: 68ch;
+  max-width: 78ch;
   font-size: 17.5px;
   line-height: 1.6;
 }
@@ -1098,7 +1097,7 @@ body.reading .ctrl-bar {
   margin-top: 56px;
   padding-top: 32px;
   border-top: 1px solid var(--rule-hair);
-  max-width: 68ch;
+  max-width: 80ch;
   margin-left: auto;
   margin-right: auto;
 }
@@ -1161,7 +1160,7 @@ body.reading .ctrl-bar {
   padding: 36px 32px;
   background: var(--surface);
   text-align: center;
-  max-width: 68ch;
+  max-width: 80ch;
 }
 .quiz-gate-eyebrow {
   font-family: var(--font-display);
