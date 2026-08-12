@@ -71,8 +71,20 @@
 
   // ---------- Formatting ----------
   function fmtDate(d) {
-    const opts = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-    return d.toLocaleDateString('en-US', opts);
+    // Compact operator's-manual style: 12 AUG 2026
+    const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    return String(d.getDate()).padStart(2, '0') + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  }
+  function partRomanForTopic(t) {
+    if (!t) return '';
+    const p = PARTS[t.part];
+    return p ? p.roman : '';
+  }
+  function estimatedMinutes(t) {
+    // Rough proxy: 3 min for intro + 1 min per concept + 2 min for the code + 4 min for the quiz
+    const concepts = (t.concepts || []).length;
+    const quiz = (t.quiz || []).length;
+    return 3 + concepts + 2 + Math.ceil(quiz * 0.8);
   }
   function todayIndex() {
     const sorted = [...TOPICS].sort((a, b) => a.num.localeCompare(b.num));
@@ -94,9 +106,17 @@
 
     const idx = todayIndex();
     const today = TOPICS[idx];
-    document.getElementById('today-title').textContent = 'Ch. ' + today.num + ' — ' + today.title;
+    const todayPart = PARTS[today.part];
+    document.getElementById('today-title').textContent = today.title;
     document.getElementById('today-tag').textContent = today.tag;
-    document.getElementById('today-cta').onclick = () => openTopic(today.id);
+    const todayMeta = document.getElementById('today-meta');
+    if (todayMeta) {
+      const p = state.progress[today.id];
+      const rev = (p && p.complete) ? 'Reviewed' : (p && p.visited) ? 'In progress' : `Rev. ${today.num}`;
+      todayMeta.textContent =
+        `§ ${today.num} · Section ${todayPart ? todayPart.roman : '—'} · ${estimatedMinutes(today)} min · ${rev}`;
+    }
+    document.getElementById('today-cta').onclick = (e) => { e.preventDefault(); openTopic(today.id); };
 
     let mastered = 0, visited = 0;
     for (const t of TOPICS) {
@@ -105,14 +125,17 @@
       if (p.visited) visited++;
       if (p.complete) mastered++;
     }
-    document.getElementById('stat-mastered').textContent = mastered;
-    document.getElementById('stat-visited').textContent = visited;
-    document.getElementById('stat-streak').textContent = computeStreak();
+    document.getElementById('stat-mastered').textContent = String(mastered).padStart(2, '0');
+    document.getElementById('stat-visited').textContent = String(visited).padStart(2, '0');
+    document.getElementById('stat-streak').textContent = String(computeStreak()).padStart(2, '0');
 
-    document.getElementById('masthead-status').textContent =
-      mastered === TOPICS.length ? 'Manual Complete' :
-      mastered > 0 ? `${mastered} Chapters Mastered` :
-      visited > 0 ? 'Reader in Progress' : 'Reader in Residence';
+    const statusEl = document.getElementById('masthead-status');
+    if (statusEl) {
+      statusEl.textContent =
+        mastered === TOPICS.length ? 'Manual complete' :
+        mastered > 0 ? `${mastered} of ${TOPICS.length} procedures complete` :
+        visited > 0 ? 'Reader in progress' : 'Reader in residence';
+    }
 
     document.querySelectorAll('.stat-total').forEach(el => { el.textContent = TOPICS.length; });
 
@@ -129,8 +152,8 @@
       section.innerHTML = `
         <div class="part-header" role="button" tabindex="0" aria-expanded="${!state.folded[partIdx]}">
           <span class="part-caret" aria-hidden="true">▾</span>
-          <span class="part-num">Part ${part.roman}</span>
-          <h3 class="part-title">${part.title}</h3>
+          <span class="part-num">§ ${String(partIdx + 1).padStart(2, '0')}</span>
+          <h3 class="part-title">Section ${part.roman} · ${part.title}</h3>
           <span class="part-desc">${part.desc}</span>
         </div>
         <div class="grid"></div>
@@ -154,49 +177,40 @@
         const btn = document.createElement('button');
         btn.className = 'chapter';
         btn.onclick = () => openTopic(t.id);
-        const dotClass = p.complete ? 'mastered' : p.visited ? 'visited' : '';
-        const statusText = p.complete ? 'Mastered' : p.visited ? 'In progress' : 'Unopened';
-        const scoreText = p.complete ? `${quizScore(t.id)}/${t.quiz.length}` : '';
+        const statusCls = p.complete ? 'done' : p.visited ? 'wip' : '';
+        const statusText = p.complete ? 'Complete' : p.visited ? 'In progress' : 'Unopened';
+        const scoreText = p.complete ? `${quizScore(t.id)}/${t.quiz.length}` : '—';
         btn.innerHTML = `
-          <div class="chapter-row">
-            <span class="chapter-num">Ch. ${t.num}</span>
-            <span>Part ${part.roman}</span>
+          <span class="chapter-num">${t.num}</span>
+          <div class="chapter-body">
+            <div class="chapter-title">${t.title}</div>
+            <p class="chapter-tag">${t.tag}</p>
           </div>
-          <div class="chapter-title">${t.title}</div>
-          <div class="chapter-tag">${t.tag}</div>
-          <div class="chapter-status">
-            <span class="chapter-dot ${dotClass}"></span>
-            <span>${statusText}</span>
-            ${scoreText ? `<span class="chapter-score">${scoreText}</span>` : ''}
-          </div>
+          <span class="chapter-stat ${statusCls}">${statusText}</span>
+          <span class="chapter-score">${scoreText}</span>
         `;
         grid.appendChild(btn);
       });
 
-      // Part exam card
+      // Part examination row
       const allMastered = chapters.every(c => state.progress[c.id] && state.progress[c.id].complete);
       const pe = state.partExams[partIdx];
       const chapterQCount = chapters.reduce((s, c) => s + (c.quiz ? c.quiz.length : 0), 0);
       const crossCount = (typeof PART_EXAMS !== 'undefined' && PART_EXAMS[partIdx]) ? PART_EXAMS[partIdx].length : 0;
       const examSize = Math.min(20, chapterQCount + crossCount);
-      const examDot = pe ? (pe.bestScore === pe.outOf ? 'mastered' : 'visited') : '';
-      const bestText = pe ? `Best ${pe.bestScore}/${pe.outOf}` : '';
-      const statusLabel = pe ? `Taken ${pe.timesTaken}×` : (allMastered ? 'Ready when you are' : 'Best after finishing the part');
+      const statusLabel = pe ? `Taken ${pe.timesTaken}×` : (allMastered ? 'Ready' : 'After the section');
+      const bestText = pe ? `${pe.bestScore}/${pe.outOf}` : '—';
       const examBtn = document.createElement('button');
       examBtn.className = 'exam-card';
       examBtn.onclick = () => startPartExam(partIdx);
       examBtn.innerHTML = `
-        <div class="exam-card-row">
-          <span class="exam-label">Exam</span>
-          <span>Part ${part.roman}</span>
+        <span class="chapter-num">EXAM</span>
+        <div class="chapter-body">
+          <div class="chapter-title">Cumulative examination — Section ${part.roman}</div>
+          <p class="chapter-tag">${examSize} questions from every procedure in Section ${part.roman}, plus cross-procedure scenarios. Order and options randomised.</p>
         </div>
-        <div class="exam-title">Cumulative Examination</div>
-        <div class="exam-tag">${examSize} questions — cross-chapter scenarios plus a sampling from every chapter in Part ${part.roman}. Order and options randomised.</div>
-        <div class="exam-status">
-          <span class="chapter-dot ${examDot}"></span>
-          <span>${statusLabel}</span>
-          ${bestText ? `<span class="best">${bestText}</span>` : ''}
-        </div>
+        <span class="chapter-stat">${statusLabel}</span>
+        <span class="chapter-score">${bestText}</span>
       `;
       grid.appendChild(examBtn);
 
@@ -219,8 +233,10 @@
       seen.push(idx);
       localStorage.setItem(DEF_SEEN_KEY, JSON.stringify(seen));
     }
-    document.getElementById('def-seen').textContent = seen.length;
-    document.getElementById('def-total').textContent = DEFS.length;
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setText('def-seen', String(seen.length).padStart(2, '0'));
+    setText('def-total', String(DEFS.length).padStart(2, '0'));
+    setText('def-index', String(idx + 1).padStart(2, '0'));
   }
 
   function computeStreak() {
@@ -727,6 +743,11 @@
     const info = document.getElementById('auth-user-info');
     info.hidden = false;
     document.getElementById('auth-user-email').textContent = user.email || 'signed in';
+    const reader = document.getElementById('masthead-reader');
+    if (reader) {
+      const handle = (user.email || '').split('@')[0] || 'reader';
+      reader.textContent = handle;
+    }
 
     let data = null, error = null;
     try {
@@ -767,6 +788,8 @@
     document.getElementById('auth-signin-btn').hidden = false;
     document.getElementById('auth-user-info').hidden = true;
     document.getElementById('auth-user-email').textContent = '';
+    const reader = document.getElementById('masthead-reader');
+    if (reader) reader.textContent = 'Anonymous';
     // localStorage keeps the last known state; app continues in local mode.
   }
 

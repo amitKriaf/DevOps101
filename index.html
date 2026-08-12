@@ -1,100 +1,118 @@
-<title>The Practitioner's Field Manual to DevOps</title>
-<link rel="stylesheet" href="manual.css?v=9">
+<title>The Field Manual · on the Practice of DevOps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,MONO@-15..0,300..900,0..1,0..1&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="manual.css?v=10">
+
+<!--
+  DIRECTION CONTRACT — Operator's Manual (Impeccable seed 5f25d89b, mode Read).
+  THESIS: DevOps is operating complex systems under pressure — this manual should look and feel like the object you reach for when it matters. Refuses the AI defaults: warm-cream + serif "book club," near-black + neon "dev tool," pastel + card-grid "SaaS learning platform."
+  OWN-WORLD: An operator's manual. Ground: printed stock (light) or functional black (dark). One saturated accent that carries stage — safety yellow (F5C400) in light, procedural red (D9351B) in dark. Display face: Recursive Sans, wide grotesque with punch. Body: Charter workhorse serif. Numerics: Recursive/JetBrains Mono. Hierarchical numbering (§ 03.4) IS content, not decoration. Hairline rules. Table-of-procedures instead of card grid. Deliberate irregularities: folio in the margin, offset section rules.
+  STORY: Reader opens at 08:12 with coffee. Masthead reads like a serviceable trade manual — Vol, Rev, Date. Today's Procedure is presented not as a hero card but as a plate: procedure number, chapter title huge in the grotesque, section, revision, estimated read time. Operator Status is a numeric readout: procedures complete, consecutive days, current section. They open a procedure, read numbered sections, complete an examination, close the tab having *operated* something rather than *scrolled through content*.
+  FIRST VIEWPORT: Full-bleed masthead bar with title left, issue metadata right, one hairline rule below. Two-column plate immediately after: LEFT = TODAY'S PROCEDURE with a huge grotesque chapter title + mono metadata + plain-link primary action. RIGHT = OPERATOR STATUS with three numeric readouts in mono. No hero image, no gradient, no button-shaped CTA. The reader knows what to do within two seconds.
+  FORM: Grounded candidate 3 of 7 (operator's manual). Ranked below Wisden Almanack (#1, MY PICK) and Peterson's Field Guide (#2). Seed key 5f25d89b. Raises absorbed from declined challengers: from ceramics — total commitment to the one accent, treating it as material that pools, not decoration that decorates; from darkroom — every surface carries one unified colour cast, no accent floats in a neutral field; from Merz collage — deliberate typographic and compositional irregularities that read as edited by a hand.
+  FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md.
+-->
 
 <div class="app">
-  <div class="masthead">
+
+  <header class="masthead">
     <div class="masthead-brand">
-      <div class="masthead-eyebrow">The Field Manual</div>
-      <h1 class="masthead-title">on the Practice of DevOps</h1>
+      <div class="masthead-title">The Field Manual</div>
+      <div class="masthead-subtitle">on the Practice of DevOps</div>
     </div>
     <div class="masthead-meta">
-      <span id="today-date">—</span>
-      <span class="sep">·</span>
-      <button class="theme-toggle auth-btn" id="auth-signin-btn" hidden>Sign in</button>
+      <span class="meta-cell"><span class="meta-key">Vol.</span> <span class="meta-val">I</span></span>
+      <span class="meta-cell"><span class="meta-key">Rev.</span> <span class="meta-val" id="masthead-rev">10</span></span>
+      <span class="meta-cell"><span class="meta-key">Date</span> <span class="meta-val" id="today-date">—</span></span>
+      <span class="meta-cell"><span class="meta-key">Reader</span> <span class="meta-val" id="masthead-reader">Anonymous</span></span>
+    </div>
+  </header>
+
+  <div class="ctrl-bar">
+    <div class="ctrl-status" id="masthead-status">Reader in residence</div>
+    <div class="ctrl-actions">
+      <button class="ctrl-btn auth-btn" id="auth-signin-btn" hidden>Sign in</button>
       <span class="auth-user-info" id="auth-user-info" hidden>
         <span class="auth-user-email" id="auth-user-email"></span>
-        <button class="theme-toggle" id="auth-signout-btn">Sign out</button>
+        <button class="ctrl-btn" id="auth-signout-btn">Sign out</button>
       </span>
-      <button class="theme-toggle" id="home-btn" aria-label="Go home" disabled>Home</button>
-      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">Theme</button>
+      <button class="ctrl-btn" id="home-btn" aria-label="Return to contents" disabled>Contents</button>
+      <button class="ctrl-btn" id="theme-toggle" aria-label="Toggle theme">Reverse field</button>
     </div>
   </div>
-  <div class="masthead-subrule">
-    <span>Vol. I &nbsp; · &nbsp; First Impression</span>
-    <span id="masthead-status">Reader in Residence</span>
-  </div>
 
-  <div class="home-view" id="home-view">
-    <div class="cover">
-      <div class="cover-vol">A daily reader in <span id="chapter-count-word">thirty</span> chapters, in seven parts</div>
-      <h2 class="cover-title">Learn the craft <em>slowly</em>,<br/>one chapter at a time.</h2>
-      <p class="cover-sub">A working practitioner's guide to the tools and habits that ship software — written to be read a page at a time, not a syllabus.</p>
-      <div class="cover-rule">
-        <span class="cover-rule-mark">§</span>
-      </div>
-    </div>
+  <main>
 
-    <div class="plate" id="today-plate">
-      <div class="plate-side">
-        <div class="plate-eyebrow">Today's Reading</div>
-        <h3 class="plate-title" id="today-title">—</h3>
-        <p class="plate-tagline" id="today-tag">—</p>
-        <button class="plate-cta" id="today-cta">
-          <span>Open the chapter</span>
-          <span class="arrow">→</span>
-        </button>
-      </div>
-      <div class="plate-side">
-        <div class="plate-eyebrow">Progress in the Manual</div>
-        <div class="plate-stats">
-          <div>
-            <div class="stat-figure"><span id="stat-mastered">0</span><span class="of">/<span class="stat-total">21</span></span></div>
-            <div class="stat-label">Mastered</div>
+    <div class="home-view" id="home-view">
+
+      <section class="plate plate-today" id="today-plate">
+        <div class="plate-block plate-procedure">
+          <div class="plate-eyebrow">Procedure for today</div>
+          <h2 class="plate-title" id="today-title">—</h2>
+          <p class="plate-tag" id="today-tag">—</p>
+          <div class="plate-metaline">
+            <span id="today-meta">Section — · Revision — · Est. — min</span>
           </div>
-          <div>
-            <div class="stat-figure"><span id="stat-visited">0</span><span class="of">/<span class="stat-total">21</span></span></div>
-            <div class="stat-label">Opened</div>
-          </div>
-          <div>
-            <div class="stat-figure" id="stat-streak">0</div>
-            <div class="stat-label">Day Streak</div>
+          <a class="plate-open" id="today-cta" href="#">Open the procedure &nbsp;→</a>
+        </div>
+        <div class="plate-block plate-status" aria-label="Operator status">
+          <div class="plate-eyebrow">Operator status</div>
+          <div class="status-grid">
+            <div class="status-cell">
+              <div class="status-figure"><span id="stat-mastered">0</span><span class="status-of">/<span class="stat-total">30</span></span></div>
+              <div class="status-label">Procedures complete</div>
+            </div>
+            <div class="status-cell">
+              <div class="status-figure"><span id="stat-visited">0</span><span class="status-of">/<span class="stat-total">30</span></span></div>
+              <div class="status-label">Opened</div>
+            </div>
+            <div class="status-cell">
+              <div class="status-figure" id="stat-streak">0</div>
+              <div class="status-label">Consecutive days</div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      <section class="plate plate-def" id="def-plate" aria-label="Glossary entry of the day">
+        <div class="def-side">
+          <div class="def-eyebrow">Glossary · entry <span id="def-index">—</span> / <span id="def-total">—</span></div>
+          <h3 class="def-term" id="def-term">—</h3>
+        </div>
+        <p class="def-body" id="def-body">—</p>
+        <div class="def-seen"><span id="def-seen">0</span> encountered</div>
+      </section>
+
+      <section class="toc" aria-labelledby="toc-heading">
+        <div class="toc-heading">
+          <div class="toc-numeral">§</div>
+          <h2 id="toc-heading">Table of procedures</h2>
+          <div class="toc-count" id="chapter-count-label">30 procedures · 7 sections</div>
+        </div>
+        <div id="chapter-grid"></div>
+      </section>
+
+      <footer class="colophon">
+        <span class="col-mark">§</span>
+        Read what interests you. The sequence is a suggestion, not a rule.
+      </footer>
+
     </div>
 
-    <div class="def-plate" id="def-plate">
-      <div>
-        <div class="def-eyebrow">Definition of the Day</div>
-        <h3 class="def-term" id="def-term">—</h3>
-      </div>
-      <p class="def-body" id="def-body">—</p>
-      <div class="def-progress"><b id="def-seen">0</b> / <span id="def-total">0</span> encountered</div>
+    <div class="topic-view" id="topic-view">
+      <button class="back-link" id="back-link">← Return to contents</button>
+      <div id="topic-content"></div>
     </div>
 
-    <div class="section-header">
-      <span class="sec-num">§</span>
-      <h2>The Chapters</h2>
-      <span class="sec-count" id="chapter-count-label">Thirty subjects, seven parts</span>
-    </div>
-    <div id="chapter-grid"></div>
-
-    <div class="colophon">
-      Read what interests you. <span class="rule-mark">§</span> The order is a suggestion, not a rule.
-    </div>
-  </div>
-
-  <div class="topic-view" id="topic-view">
-    <button class="back-link" id="back-link">← Return to the chapters</button>
-    <div id="topic-content"></div>
-  </div>
+  </main>
 </div>
 
 <div class="auth-modal" id="auth-modal" hidden>
   <div class="auth-backdrop" id="auth-backdrop"></div>
   <div class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
     <button class="auth-close" id="auth-close" aria-label="Close">×</button>
-    <div class="auth-eyebrow">Field Manual</div>
+    <div class="auth-eyebrow">Field Manual · access</div>
     <h2 class="auth-title" id="auth-title">Sign in</h2>
     <div class="auth-tabs" role="tablist">
       <button class="auth-tab active" id="auth-tab-signin" data-mode="signin" role="tab" aria-selected="true">Sign in</button>
@@ -116,10 +134,9 @@
   </div>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=9"></script>
-<script src="topics.js?v=9"></script>
-<script src="definitions.js?v=9"></script>
-<script src="part-exams.js?v=9"></script>
-<script src="manual.js?v=9"></script>
+<script src="config.js?v=10"></script>
+<script src="topics.js?v=10"></script>
+<script src="definitions.js?v=10"></script>
+<script src="part-exams.js?v=10"></script>
+<script src="manual.js?v=10"></script>
