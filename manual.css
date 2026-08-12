@@ -23,6 +23,7 @@
   --success:       #4E6B3A;
 
   /* Type stacks */
+  --font-headline: "Antic Slab", "Rockwell", "Rockwell Nova", "Sitka Heading", Georgia, "Times New Roman", serif;
   --font-display: "Recursive", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-body:    "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
   --font-mono:    "JetBrains Mono", "Recursive", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
@@ -147,11 +148,11 @@ button {
 .masthead-brand { flex-shrink: 0; }
 
 .masthead-title {
-  font-family: var(--font-display);
-  font-variation-settings: "wght" 800, var(--rec-sans-tight);
-  font-size: clamp(1.55rem, 3.4vw, 2.4rem);
-  line-height: 0.95;
-  letter-spacing: -0.02em;
+  font-family: var(--font-headline);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 3.6vw, 2.55rem);
+  line-height: 0.98;
+  letter-spacing: -0.005em;
   color: var(--ink);
   margin: 0;
   text-transform: none;
@@ -280,23 +281,34 @@ button {
   font-size: 10.5px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--accent-ink);
-  background: var(--accent);
+  color: var(--accent);
   display: inline-block;
-  padding: 3px 8px 4px;
   margin-bottom: 24px;
   line-height: 1;
+  position: relative;
+  padding-left: 12px;
+}
+.plate-eyebrow::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  transform: translateY(-50%);
 }
 
 .plate-title {
-  font-family: var(--font-display);
-  font-variation-settings: "wght" 800, var(--rec-sans-tight);
-  font-size: clamp(1.85rem, 4vw, 2.85rem);
-  line-height: 0.98;
-  letter-spacing: -0.02em;
+  font-family: var(--font-headline);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
   color: var(--ink);
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   text-wrap: balance;
+  max-width: 14ch;
 }
 
 .plate-tag {
@@ -462,10 +474,10 @@ button {
   line-height: 1;
 }
 .toc-heading h2 {
-  font-family: var(--font-display);
-  font-variation-settings: "wght" 700, var(--rec-sans-tight);
-  font-size: clamp(1.35rem, 2vw, 1.7rem);
-  letter-spacing: -0.01em;
+  font-family: var(--font-headline);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+  letter-spacing: -0.005em;
   color: var(--ink);
   margin: 0;
 }
@@ -614,7 +626,7 @@ button {
   padding-top: 4px;
 }
 .chapter-stat.done { color: var(--success); }
-.chapter-stat.wip { color: var(--accent-ink); background: var(--accent); padding: 2px 6px 3px; letter-spacing: 0.12em; }
+.chapter-stat.wip { color: var(--accent); font-variation-settings: "wght" 700, var(--rec-sans); }
 .chapter-score {
   font-family: var(--font-mono);
   font-variation-settings: var(--rec-mono);
@@ -644,9 +656,16 @@ button {
   background: var(--surface);
 }
 .exam-card:hover { background: var(--accent-quiet); }
-.exam-card .chapter-num { color: var(--accent-ink); background: var(--accent); padding: 2px 6px 3px; text-align: center; }
+.exam-card .chapter-num {
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 2px 5px 3px;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
 .exam-card .chapter-title { font-variation-settings: "wght" 700, var(--rec-sans-tight); }
-.exam-card .chapter-stat { color: var(--danger); font-weight: 600; }
+.exam-card .chapter-stat { color: var(--ink-2); font-weight: 500; }
 
 /* ---------- Colophon ---------- */
 
@@ -703,17 +722,17 @@ button {
   flex-wrap: wrap;
 }
 .topic-eyebrow .num {
-  color: var(--accent-ink);
-  background: var(--accent);
-  padding: 2px 6px 3px;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 1px 5px 2px;
   font-weight: 500;
 }
 .topic-title {
-  font-family: var(--font-display);
-  font-variation-settings: "wght" 800, var(--rec-sans-tight);
-  font-size: clamp(2rem, 4.4vw, 3.15rem);
-  line-height: 0.98;
-  letter-spacing: -0.02em;
+  font-family: var(--font-headline);
+  font-weight: 400;
+  font-size: clamp(2.1rem, 4.6vw, 3.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
   color: var(--ink);
   margin: 0 0 12px;
   text-wrap: balance;
@@ -842,10 +861,10 @@ button {
   margin-top: 8px;
   max-width: 64ch;
 }
-.code-block .k { color: var(--accent-ink); background: var(--accent); padding: 0 2px; }
+.code-block .k { color: var(--ink);    font-weight: 700; }
 .code-block .s { color: var(--success); }
-.code-block .c { color: var(--ink-3); font-style: italic; }
-.code-block .n { color: var(--danger); }
+.code-block .c { color: var(--ink-3);  font-style: italic; }
+.code-block .n { color: var(--ink);    font-weight: 500; }
 
 /* ---------- Examination ---------- */
 
@@ -862,20 +881,19 @@ button {
   font-size: 10.5px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--accent-ink);
-  background: var(--accent);
+  color: var(--accent);
   display: inline-block;
-  padding: 3px 8px 4px;
   margin-bottom: 16px;
   line-height: 1;
 }
 .quiz-gate-title {
-  font-family: var(--font-display);
-  font-variation-settings: "wght" 700, var(--rec-sans-tight);
-  font-size: 1.45rem;
+  font-family: var(--font-headline);
+  font-weight: 400;
+  font-size: 1.7rem;
   color: var(--ink);
   margin: 0 0 8px;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
+  line-height: 1.1;
 }
 .quiz-gate-sub {
   font-family: var(--font-body);
@@ -950,8 +968,8 @@ button {
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
 }
-.q-label b { color: var(--accent-ink); background: var(--accent); padding: 1px 5px; font-weight: 500; }
-.q-source { color: var(--accent-ink); background: var(--accent); padding: 1px 5px; margin-left: 6px; font-weight: 500; }
+.q-label b { color: var(--accent); font-weight: 600; padding: 0 2px; }
+.q-source { color: var(--accent); font-weight: 500; margin-left: 6px; letter-spacing: 0.02em; }
 .exam-view .q-source { font-weight: 500; }
 
 .q-text {
@@ -1181,20 +1199,19 @@ button {
   font-size: 10.5px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--accent-ink);
-  background: var(--accent);
+  color: var(--accent);
   display: inline-block;
-  padding: 3px 8px 4px;
   margin-bottom: 14px;
   line-height: 1;
 }
 .auth-title {
-  font-family: var(--font-display);
-  font-variation-settings: "wght" 700, var(--rec-sans-tight);
-  font-size: 1.55rem;
+  font-family: var(--font-headline);
+  font-weight: 400;
+  font-size: 1.8rem;
   color: var(--ink);
   margin: 0 0 22px;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.005em;
+  line-height: 1.1;
 }
 .auth-tabs { display: flex; margin-bottom: 22px; border-bottom: 1px solid var(--rule); }
 .auth-tab {
@@ -1271,6 +1288,124 @@ button {
 
 :focus { outline: 0; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Mobile & narrow viewport ---------- */
+
+@media (max-width: 900px) {
+  .masthead {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+  }
+  .masthead-meta {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .meta-cell { gap: 2px; align-items: flex-start; }
+}
+
+@media (max-width: 640px) {
+  .app { padding: 22px 18px 96px; }
+
+  .masthead { gap: 14px; padding-bottom: 14px; }
+  .masthead-title { font-size: 1.55rem; line-height: 1.02; }
+  .masthead-subtitle { font-size: 0.9rem; }
+  .masthead-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+  }
+
+  .ctrl-bar {
+    gap: 8px;
+    padding: 8px 0 16px;
+    margin-bottom: 28px;
+  }
+  .ctrl-status { flex-basis: 100%; margin-bottom: 4px; }
+  .ctrl-actions { gap: 2px; }
+  .ctrl-btn { padding: 6px 8px; font-size: 10px; letter-spacing: 0.14em; }
+
+  .plate-block { padding: 24px 20px; }
+  .plate-title { font-size: 1.65rem; line-height: 1.05; max-width: none; }
+  .plate-tag { font-size: 1rem; }
+  .plate-metaline { font-size: 11px; }
+  .status-figure { font-size: 1.6rem; }
+  .status-label { font-size: 10px; letter-spacing: 0.14em; }
+
+  .plate-def { padding: 20px 20px; }
+  .def-term { font-size: 1.35rem; }
+  .def-body { font-size: 15px; }
+
+  .toc-heading { grid-template-columns: auto 1fr; gap: 12px; padding-bottom: 10px; }
+  .toc-heading h2 { font-size: 1.3rem; }
+  .toc-count { grid-column: 1 / -1; font-size: 11px; margin-top: 2px; }
+  .toc-numeral { width: 26px; height: 26px; font-size: 1.1rem; }
+
+  .part-header { padding: 18px 0 8px; gap: 12px; }
+  .part-num { font-size: 11px; }
+  .part-title { font-size: 1.05rem; }
+
+  .chapter, .exam-card {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 4px 12px;
+    padding: 14px 6px;
+  }
+  .chapter-num { font-size: 12.5px; padding-top: 1px; }
+  .chapter-title { font-size: 1rem; }
+  .chapter-tag { font-size: 13px; -webkit-line-clamp: 3; }
+  .chapter-stat {
+    grid-column: 2 / -1;
+    padding-top: 6px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+  .chapter-score {
+    grid-column: 2 / -1;
+    text-align: left;
+    padding-top: 0;
+    margin-top: -2px;
+    font-size: 12px;
+  }
+  .exam-card .chapter-num { font-size: 10px; padding: 2px 4px 3px; }
+
+  .topic-title { font-size: 2.1rem; line-height: 1.05; }
+  .topic-lede { font-size: 1.05rem; }
+  .topic-section { margin-bottom: 40px; }
+  .topic-section h3 { font-size: 1.05rem; gap: 8px; }
+  .prose p { font-size: 16px; }
+  .glossary dt { font-size: 0.95rem; }
+  .glossary dd { font-size: 14.5px; }
+
+  .code-block { font-size: 12px; padding: 20px 16px 16px; }
+  .code-block::before { font-size: 9px; left: 12px; padding: 0 6px; }
+  .code-cap { font-size: 13px; }
+
+  .quiz, .quiz-gate { padding: 24px 20px 22px; }
+  .quiz-gate-title { font-size: 1.4rem; }
+  .quiz-gate-sub { font-size: 14px; }
+  .quiz-start { font-size: 11px; padding: 10px 16px; }
+  .q-text { font-size: 1rem; }
+  .q-option { font-size: 14.5px; padding: 10px 12px; }
+  .q-option .letter { width: 18px; font-size: 12px; }
+  .q-label { font-size: 11px; }
+  .q-explanation { font-size: 14px; padding: 10px 12px 10px 30px; }
+  .q-explanation::before { left: 10px; }
+
+  .quiz-heading { gap: 6px; }
+  .quiz-heading h3 { font-size: 1.1rem; }
+
+  .auth-dialog { padding: 28px 24px 22px; }
+  .auth-title { font-size: 1.55rem; }
+
+  .colophon { margin-top: 48px; font-size: 13px; }
+  .back-link { margin-bottom: 24px; font-size: 10px; }
+}
+
+/* Tiny phones: hide the "Reader" cell to fit 3 cells; keep the essential 3 */
+@media (max-width: 380px) {
+  .masthead-meta { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .masthead-meta .meta-cell:nth-child(4) { display: none; }
+}
 
 /* ---------- Reduced motion ---------- */
 
