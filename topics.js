@@ -16,6 +16,57 @@
       num: '01',
       title: 'Continuous Integration & Delivery',
       tag: 'The rhythm section of software delivery — merge often, ship on a beat, keep the trunk always releasable.',
+      figure: {
+        tag: 'Figure 1 · A five-stage pipeline',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 150" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <!-- Commit marker -->
+          <g>
+            <circle cx="30" cy="70" r="6" fill="currentColor" stroke="none"/>
+            <text x="30" y="98" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">git push</text>
+          </g>
+          <!-- 5 stages -->
+          <g>
+            <rect x="60"  y="40" width="90" height="60"/>
+            <text x="105" y="66" text-anchor="middle" font-size="11" font-weight="700" stroke="none">lint</text>
+            <text x="105" y="82" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">~10s</text>
+
+            <rect x="170" y="40" width="90" height="60"/>
+            <text x="215" y="66" text-anchor="middle" font-size="11" font-weight="700" stroke="none">test</text>
+            <text x="215" y="82" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">~2 min</text>
+
+            <rect x="280" y="40" width="90" height="60"/>
+            <text x="325" y="66" text-anchor="middle" font-size="11" font-weight="700" stroke="none">build</text>
+            <text x="325" y="82" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">image push</text>
+
+            <rect x="390" y="40" width="100" height="60"/>
+            <text x="440" y="66" text-anchor="middle" font-size="11" font-weight="700" stroke="none">deploy·stg</text>
+            <text x="440" y="82" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">auto</text>
+
+            <rect x="510" y="40" width="90" height="60" class="fig-em" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="555" y="66" text-anchor="middle" font-size="11" font-weight="700" stroke="none" class="fig-em">deploy·prod</text>
+            <text x="555" y="82" text-anchor="middle" font-size="9" stroke="none" class="fig-em">manual gate</text>
+          </g>
+          <!-- Arrows between stages -->
+          <g fill="currentColor">
+            <path d="M 40 70 L 58 70" stroke="currentColor"/>
+            <path d="M 152 70 L 168 70" stroke="currentColor"/>
+            <polygon points="152,70 148,67 148,73"/>
+            <path d="M 262 70 L 278 70" stroke="currentColor"/>
+            <polygon points="262,70 258,67 258,73"/>
+            <path d="M 372 70 L 388 70" stroke="currentColor"/>
+            <polygon points="372,70 368,67 368,73"/>
+            <path d="M 492 70 L 508 70" stroke="currentColor"/>
+            <polygon points="492,70 488,67 488,73"/>
+          </g>
+          <!-- Fail-fast note -->
+          <g stroke="none" fill="currentColor" class="fig-muted">
+            <text x="105" y="130" text-anchor="middle" font-size="9">fast, likely to fail</text>
+            <text x="325" y="130" text-anchor="middle" font-size="9">→ once green, single artifact promoted →</text>
+            <text x="555" y="130" text-anchor="middle" font-size="9">expensive, requires trust</text>
+          </g>
+        </svg>`,
+        caption: 'Every commit walks the same path — cheap checks first (lint runs in seconds), expensive ones later (build, deploy). Fail-fast: a red early stage stops the run before the slow stages start. One artifact from build promoted downstream — never rebuilt per environment.',
+      },
       intro: `Continuous Integration is the discipline of merging every developer's work into a shared trunk many times a day, with automated build and tests running on each merge. Continuous Delivery keeps that trunk perpetually releasable; Continuous Deployment goes further and actually releases it, automatically, once the pipeline is green.
 The whole point is <em>short feedback</em>: the sooner a broken change is discovered, the smaller and cheaper the fix. Long-lived branches and manual deploys are how ten-minute bugs turn into three-day investigations.
 The mechanics — pipelines, stages, runners, artifacts, environments — are the same across GitLab CI, GitHub Actions, Jenkins, CircleCI, Buildkite, and the rest. Learn the shape once; each vendor just paints it differently.`,
@@ -131,6 +182,47 @@ The mechanics — pipelines, stages, runners, artifacts, environments — are th
       num: '02',
       title: 'Docker & Containers',
       tag: 'A process with its own view of the filesystem, network, and processes — packaged with what it needs, sharing the host kernel.',
+      figure: {
+        tag: 'Figure 1 · The container abstraction',
+        svg: `<svg class="figure-svg" viewBox="0 0 560 220" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <!-- three containers on top -->
+          <g>
+            <rect x="40" y="30" width="140" height="120"/>
+            <text x="110" y="52" text-anchor="middle" font-size="12" font-weight="700" stroke="none">container A</text>
+            <text x="110" y="72" text-anchor="middle" font-size="10" class="fig-muted" stroke="none">image: node:20</text>
+            <text x="110" y="90" text-anchor="middle" font-size="10" class="fig-muted" stroke="none">PID 1 = api</text>
+            <line x1="60" y1="102" x2="160" y2="102" stroke-dasharray="2 3" opacity="0.4"/>
+            <text x="110" y="120" text-anchor="middle" font-size="9" class="fig-muted" stroke="none">own PID / mnt / net ns</text>
+            <text x="110" y="136" text-anchor="middle" font-size="9" class="fig-muted" stroke="none">cpu + memory cgroup</text>
+
+            <rect x="210" y="30" width="140" height="120"/>
+            <text x="280" y="52" text-anchor="middle" font-size="12" font-weight="700" stroke="none">container B</text>
+            <text x="280" y="72" text-anchor="middle" font-size="10" class="fig-muted" stroke="none">image: nginx:1.27</text>
+            <text x="280" y="90" text-anchor="middle" font-size="10" class="fig-muted" stroke="none">PID 1 = nginx</text>
+            <line x1="230" y1="102" x2="330" y2="102" stroke-dasharray="2 3" opacity="0.4"/>
+            <text x="280" y="120" text-anchor="middle" font-size="9" class="fig-muted" stroke="none">own PID / mnt / net ns</text>
+            <text x="280" y="136" text-anchor="middle" font-size="9" class="fig-muted" stroke="none">cpu + memory cgroup</text>
+
+            <rect x="380" y="30" width="140" height="120"/>
+            <text x="450" y="52" text-anchor="middle" font-size="12" font-weight="700" stroke="none">container C</text>
+            <text x="450" y="72" text-anchor="middle" font-size="10" class="fig-muted" stroke="none">image: postgres:16</text>
+            <text x="450" y="90" text-anchor="middle" font-size="10" class="fig-muted" stroke="none">PID 1 = postgres</text>
+            <line x1="400" y1="102" x2="500" y2="102" stroke-dasharray="2 3" opacity="0.4"/>
+            <text x="450" y="120" text-anchor="middle" font-size="9" class="fig-muted" stroke="none">own PID / mnt / net ns</text>
+            <text x="450" y="136" text-anchor="middle" font-size="9" class="fig-muted" stroke="none">cpu + memory cgroup</text>
+          </g>
+          <!-- connections down to kernel -->
+          <g stroke-dasharray="1 3" opacity="0.35">
+            <line x1="110" y1="150" x2="110" y2="170"/>
+            <line x1="280" y1="150" x2="280" y2="170"/>
+            <line x1="450" y1="150" x2="450" y2="170"/>
+          </g>
+          <!-- shared kernel bar -->
+          <rect x="40" y="170" width="480" height="30"/>
+          <text x="280" y="190" text-anchor="middle" font-size="11" font-weight="700" stroke="none">host Linux kernel — shared</text>
+        </svg>`,
+        caption: 'Every container is a process (or process tree) running against the SAME host kernel, each isolated by its own namespaces and constrained by its own cgroups. No guest OS — that\'s why containers start in milliseconds and a laptop can hold dozens.',
+      },
       intro: `A container is a process (or process tree) running with its own view of the filesystem, network, and process tree. It shares the <em>host OS kernel</em> — no guest OS — which is why it's cheaper and faster than a VM, and everything the process needs is bundled inside its image, which is why it's more predictable than "run it on the server."
 The primitives depend on the host. On <em>Linux</em> hosts (99% of production), containers are Linux processes isolated with kernel <em>namespaces</em> and constrained with <em>cgroups</em>. Windows Server has its own native container implementation using job objects and Server silos. Two hard rules: <strong>the image dictates the OS userspace</strong> (an Alpine image ships a Linux userspace; a <code>windows/servercore</code> image ships Windows binaries), and <strong>the image OS must match the host kernel</strong>. On a Mac or Windows laptop running Docker Desktop, "Linux containers" actually run inside a small hidden Linux VM (LinuxKit / WSL2) — the illusion is native but there is a VM in the middle.
 Docker made this ergonomic. It gave us a build language (the <code>Dockerfile</code>), an artifact format (the image), a runtime (the daemon + CLI), and a distribution format (registries). Today the wider ecosystem uses lower-level runtimes (<code>containerd</code>, <code>runc</code>) under the hood, but the Docker CLI and Dockerfile format are the durable interface almost every engineer speaks.`,
@@ -253,6 +345,60 @@ $ docker image prune -a                        <span class="c"># reclaim disk fr
       num: '10',
       title: 'Kubernetes',
       tag: 'A control loop keeping declared state and reality in agreement — pods, labels, probes, and thirteen objects you\'ll actually use.',
+      figure: {
+        tag: 'Figure 1 · How a Deployment stays alive',
+        svg: `<svg class="figure-svg" viewBox="0 0 560 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <!-- Deployment (top layer) -->
+          <g>
+            <rect x="180" y="20" width="200" height="52"/>
+            <text x="280" y="42" text-anchor="middle" font-size="12" font-weight="700" stroke="none">Deployment</text>
+            <text x="280" y="60" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">replicas: 3 · rolling update</text>
+          </g>
+          <!-- arrow down to ReplicaSet -->
+          <g stroke="currentColor" fill="currentColor">
+            <line x1="280" y1="72" x2="280" y2="98"/>
+            <polygon points="280,98 276,92 284,92"/>
+            <text x="290" y="90" font-size="9" stroke="none" class="fig-muted">owns</text>
+          </g>
+          <!-- ReplicaSet -->
+          <g>
+            <rect x="180" y="100" width="200" height="52"/>
+            <text x="280" y="122" text-anchor="middle" font-size="12" font-weight="700" stroke="none">ReplicaSet</text>
+            <text x="280" y="140" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">selector: app=api · watches count</text>
+          </g>
+          <!-- three arrows down to pods -->
+          <g stroke="currentColor" fill="currentColor">
+            <line x1="220" y1="152" x2="120" y2="188"/>
+            <polygon points="120,188 122,180 128,184"/>
+            <line x1="280" y1="152" x2="280" y2="188"/>
+            <polygon points="280,188 276,182 284,182"/>
+            <line x1="340" y1="152" x2="440" y2="188"/>
+            <polygon points="440,188 434,184 432,180"/>
+          </g>
+          <!-- three pods -->
+          <g>
+            <rect x="60" y="190" width="120" height="52"/>
+            <text x="120" y="212" text-anchor="middle" font-size="11" font-weight="700" stroke="none">Pod api-6b7…</text>
+            <text x="120" y="228" text-anchor="middle" font-size="9" stroke="none" class="fig-em">app=api ✓</text>
+
+            <rect x="220" y="190" width="120" height="52"/>
+            <text x="280" y="212" text-anchor="middle" font-size="11" font-weight="700" stroke="none">Pod api-2c3…</text>
+            <text x="280" y="228" text-anchor="middle" font-size="9" stroke="none" class="fig-em">app=api ✓</text>
+
+            <rect x="380" y="190" width="120" height="52"/>
+            <text x="440" y="212" text-anchor="middle" font-size="11" font-weight="700" stroke="none">Pod api-9f8…</text>
+            <text x="440" y="228" text-anchor="middle" font-size="9" stroke="none" class="fig-em">app=api ✓</text>
+          </g>
+          <!-- Service selector arrow -->
+          <g stroke="var(--accent)" fill="var(--accent)" stroke-width="1.2">
+            <path d="M 530 216 Q 520 216 505 216" stroke-dasharray="3 3"/>
+            <text x="540" y="220" font-size="10" stroke="none" class="fig-em" font-weight="700">Service</text>
+            <text x="540" y="234" font-size="9" stroke="none" class="fig-em">selector:</text>
+            <text x="540" y="246" font-size="9" stroke="none" class="fig-em">app=api</text>
+          </g>
+        </svg>`,
+        caption: 'Deployment → ReplicaSet → Pods. The Deployment owns a ReplicaSet, which keeps the declared number of Pods alive; if one dies, another spawns. Services find those Pods purely by matching label selectors — no name-binding, so the fleet can churn without breaking routing.',
+      },
       intro: `Kubernetes is a container orchestrator built on one idea: you <em>declare</em> what you want (three replicas of this image, exposed on port 80, with these resource limits, matching these labels) and a control loop keeps reality in agreement — forever. You never tell it <em>how</em> to schedule pods, replace failed ones, or route traffic; you tell it the target, and it converges.
 Every object lives in <code>etcd</code>, the cluster's distributed key-value store, behind the <code>kube-apiserver</code>. Controllers (Deployment, ReplicaSet, StatefulSet, ...) watch the API and take action to close the gap between spec and status. <code>kubectl</code> is just a friendly HTTP client that reads and writes those objects.
 Most day-to-day Kubernetes is picking the right handful of objects, wiring them together with labels, and understanding what fails when. The list below is that handful.`,

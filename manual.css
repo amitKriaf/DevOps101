@@ -258,6 +258,64 @@ button {
 .ctrl-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .ctrl-btn:disabled { opacity: .35; cursor: default; }
 
+/* ---------- Loop hero — DevOps continuous-cycle infinity ---------- */
+
+.loop-hero {
+  text-align: center;
+  padding: 12px 0 32px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--rule-hair);
+}
+.loop-svg {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  display: inline-block;
+  overflow: visible;
+}
+.loop-path {
+  stroke: var(--rule);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.loop-tick {
+  fill: var(--rule);
+}
+.loop-dot { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 40%, transparent)); }
+.loop-labels {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-variation-settings: var(--rec-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  text-transform: lowercase;
+}
+.loop-labels .loop-mid { color: var(--accent); font-weight: 700; }
+.loop-caption {
+  font-family: var(--font-display);
+  font-variation-settings: "wght" 500, var(--rec-sans);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .loop-dot animateMotion { display: none; }
+}
+@media (max-width: 640px) {
+  .loop-hero { padding: 8px 0 22px; margin-bottom: 16px; }
+  .loop-svg { max-width: 240px; }
+  .loop-labels { gap: 10px; font-size: 9.5px; }
+  .loop-caption { font-size: 9.5px; letter-spacing: 0.22em; }
+}
+
 /* ---------- Plate — today's procedure + operator status ---------- */
 
 .plate {
@@ -870,7 +928,51 @@ button {
   .glossary dd { border-top: 0; padding-top: 0; }
 }
 
-/* Code block — a real runbook example */
+/* Figure — inline SVG diagram, break out of the reading column */
+.figure {
+  margin: 32px -70px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 22px 28px 18px;
+  color: var(--ink);
+}
+@media (max-width: 900px) {
+  .figure { margin: 32px 0; padding: 20px 18px 16px; }
+}
+.figure-tag {
+  font-family: var(--font-display);
+  font-variation-settings: "wght" 700, var(--rec-sans);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.figure-svg {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  margin: 0 auto;
+  color: var(--ink);
+}
+.figure-svg text { font-family: var(--font-mono); font-variation-settings: var(--rec-mono); fill: currentColor; }
+.figure-svg .fig-em { fill: var(--accent); }
+.figure-svg .fig-muted { opacity: 0.6; }
+.figure-caption {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.5;
+  margin: 16px auto 0;
+  padding-top: 12px;
+  border-top: 1px dotted var(--rule);
+  max-width: 64ch;
+}
+
+/* Code block — a real runbook example.
+   Breaks out of the reading column so wide code doesn't clip. */
 .code-block {
   background: var(--surface);
   color: var(--ink);
@@ -883,9 +985,13 @@ button {
   overflow-x: auto;
   white-space: pre;
   tab-size: 2;
-  margin: 0 0 8px;
-  max-width: 100%;
+  margin: 0 -70px 8px -70px;
+  max-width: none;
+  width: calc(100% + 140px);
   position: relative;
+}
+@media (max-width: 900px) {
+  .code-block { margin: 0 0 8px; width: 100%; }
 }
 .code-block::before {
   content: "$  LISTING";

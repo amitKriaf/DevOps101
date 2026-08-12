@@ -372,6 +372,14 @@
         <div class="prose">${t.intro.split('\n').map(p => `<p>${p}</p>`).join('')}</div>
       </div>
 
+      ${t.figure ? `
+        <figure class="figure">
+          ${t.figure.tag ? `<div class="figure-tag">${t.figure.tag}</div>` : ''}
+          ${t.figure.svg}
+          ${t.figure.caption ? `<figcaption class="figure-caption">${t.figure.caption}</figcaption>` : ''}
+        </figure>
+      ` : ''}
+
       <div class="topic-section">
         <h3><span class="sub-num">§2</span> Core concepts</h3>
         <dl class="glossary">${conceptsHtml}</dl>
