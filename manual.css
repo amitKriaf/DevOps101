@@ -250,7 +250,7 @@ button {
    width so the rule beneath the header aligns with content below. */
 body.reading .masthead,
 body.reading .ctrl-bar {
-  max-width: 920px;
+  max-width: 1040px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -822,7 +822,7 @@ body.reading .ctrl-bar {
 
 .topic-view {
   display: none;
-  max-width: 920px;
+  max-width: 1040px;
   margin: 0 auto;
 }
 .topic-view.active { display: block; }
@@ -903,7 +903,7 @@ body.reading .ctrl-bar {
   max-width: 46ch;
 }
 
-.topic-section { margin-bottom: 48px; max-width: 80ch; }
+.topic-section { margin-bottom: 48px; max-width: 100%; }
 .topic-section h3 {
   font-family: var(--font-display);
   font-variation-settings: "wght" 700, var(--rec-sans-tight);
@@ -927,9 +927,9 @@ body.reading .ctrl-bar {
 }
 .prose p {
   margin: 0 0 16px;
-  max-width: 78ch;
-  font-size: 17.5px;
-  line-height: 1.6;
+  max-width: none;
+  font-size: 18px;
+  line-height: 1.62;
 }
 .prose p:last-child { margin-bottom: 0; }
 
@@ -1097,7 +1097,7 @@ body.reading .ctrl-bar {
   margin-top: 56px;
   padding-top: 32px;
   border-top: 1px solid var(--rule-hair);
-  max-width: 80ch;
+  max-width: 100%;
   margin-left: auto;
   margin-right: auto;
 }
@@ -1160,7 +1160,7 @@ body.reading .ctrl-bar {
   padding: 36px 32px;
   background: var(--surface);
   text-align: center;
-  max-width: 80ch;
+  max-width: 100%;
 }
 .quiz-gate-eyebrow {
   font-family: var(--font-display);
