@@ -112,19 +112,18 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 60vw 45vw at 8% 0%,   rgba(143, 180, 217, 0.32), transparent 62%),
-    radial-gradient(ellipse 55vw 40vw at 100% 8%, rgba(184, 168, 217, 0.28), transparent 62%),
-    radial-gradient(ellipse 50vw 40vw at 92% 100%, rgba(217, 168, 184, 0.30), transparent 62%),
-    radial-gradient(ellipse 55vw 40vw at 0% 100%, rgba(229, 200, 160, 0.28), transparent 62%);
+    radial-gradient(ellipse 110vw 80vw at -15% -20%,  rgba(143, 180, 217, 0.20), transparent 80%),
+    radial-gradient(ellipse 100vw 75vw at 115% -15%,  rgba(184, 168, 217, 0.18), transparent 80%),
+    radial-gradient(ellipse 100vw 75vw at 115% 115%,  rgba(217, 168, 184, 0.20), transparent 80%),
+    radial-gradient(ellipse 110vw 80vw at -15% 115%,  rgba(229, 200, 160, 0.20), transparent 80%);
 }
 :root:not([data-theme="light"]) body::before,
 :root[data-theme="dark"] body::before {
   background:
-    radial-gradient(ellipse 65vw 50vw at 5% -5%,   rgba(72, 216, 190, 0.28), transparent 62%),
-    radial-gradient(ellipse 60vw 45vw at 100% 5%,  rgba(160, 128, 220, 0.30), transparent 62%),
-    radial-gradient(ellipse 55vw 45vw at 95% 100%, rgba(230, 132, 168, 0.22), transparent 62%),
-    radial-gradient(ellipse 60vw 45vw at -5% 100%, rgba(232, 176, 108, 0.22), transparent 62%),
-    radial-gradient(ellipse 40vw 30vw at 50% 50%,  rgba(120, 168, 220, 0.10), transparent 65%);
+    radial-gradient(ellipse 120vw 85vw at -20% -20%,  rgba(72, 216, 190, 0.16), transparent 82%),
+    radial-gradient(ellipse 110vw 80vw at 120% -15%,  rgba(160, 128, 220, 0.18), transparent 82%),
+    radial-gradient(ellipse 105vw 75vw at 115% 115%,  rgba(230, 132, 168, 0.14), transparent 82%),
+    radial-gradient(ellipse 115vw 80vw at -20% 115%,  rgba(232, 176, 108, 0.14), transparent 82%);
 }
 
 
@@ -958,9 +957,9 @@ body.reading .ctrl-bar {
 /* Glossary — definition list styled as a table */
 .glossary {
   display: grid;
-  grid-template-columns: minmax(160px, 220px) 1fr;
-  gap: 4px 32px;
-  max-width: 78ch;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  gap: 4px 40px;
+  max-width: 100%;
   margin: 0;
 }
 @media (max-width: 640px) { .glossary { grid-template-columns: 1fr; gap: 4px 0; } }
@@ -968,19 +967,19 @@ body.reading .ctrl-bar {
 .glossary dt {
   font-family: var(--font-display);
   font-variation-settings: "wght" 600, var(--rec-sans-tight);
-  font-size: 1rem;
+  font-size: 1.08rem;
   color: var(--ink);
-  padding: 14px 0 14px 0;
+  padding: 16px 0 16px 0;
   border-top: 1px solid var(--rule-hair);
   letter-spacing: -0.005em;
   line-height: 1.3;
 }
 .glossary dd {
   margin: 0;
-  padding: 14px 0;
+  padding: 16px 0;
   color: var(--ink-2);
-  font-size: 15.5px;
-  line-height: 1.5;
+  font-size: 17.5px;
+  line-height: 1.55;
   border-top: 1px solid var(--rule-hair);
 }
 @media (max-width: 640px) {
