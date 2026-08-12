@@ -273,24 +273,25 @@ button {
   display: inline-block;
   overflow: visible;
 }
-/* Two loop paths — each stroked as a thick ring. They share the point (390,170) so their
-   strokes visually intersect at the middle, producing a genuine figure-8. */
+/* Two loop paths — each stroked as a thick ring. They share (390,170) — where they cross. */
 .ring-arc {
   fill: none;
-  stroke-width: 38;
+  stroke-width: 40;
   stroke-linejoin: round;
+  stroke-linecap: round;
 }
-.ring-dev { stroke: var(--accent); }
-.ring-ops { stroke: var(--danger); }
+.ring-dev { stroke: url(#devGrad); }
+.ring-ops { stroke: url(#opsGrad); }
 
-/* Stage labels ride along each loop via <textPath>. */
+/* Stage labels ride along each half-loop via <textPath>. Every half-path is drawn
+   left-to-right so all labels stay upright. Dark ink for readability on pastel rings. */
 .stage-flow {
   font-family: var(--font-mono);
   font-variation-settings: var(--rec-mono);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
-  fill: var(--ground);
-  letter-spacing: 0.04em;
+  fill: #2A2418;
+  letter-spacing: 0.06em;
   text-transform: lowercase;
 }
 
@@ -302,7 +303,8 @@ button {
   fill: var(--ink);
 }
 .loop-orbit {
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 65%, transparent));
+  fill: #6B7C99;
+  filter: drop-shadow(0 0 8px rgba(107, 124, 153, 0.6));
 }
 @media (prefers-reduced-motion: reduce) {
   .loop-orbit animateMotion { display: none; }

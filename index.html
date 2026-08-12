@@ -2,7 +2,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antic+Slab&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..900,0..1,0..1&family=JetBrains+Mono:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="manual.css?v=27">
+<link rel="stylesheet" href="manual.css?v=28">
 
 <!--
   DIRECTION CONTRACT — Operator's Manual (Impeccable seed 5f25d89b, mode Read).
@@ -51,51 +51,54 @@
           <title id="loop-title">DevOps continuous cycle — plan, code, build, test on the Dev side; release, deploy, operate, monitor on the Ops side</title>
 
           <defs>
-            <!-- The two loops of the lemniscate — they SHARE a crossing point at (390, 170).
-                 Each is drawn as a closed cubic Bezier — traced clockwise so textPath text
-                 reads right-side-up on the top arc. -->
+            <!-- Two pastel gradients, one per side of the lemniscate -->
+            <linearGradient id="devGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="#8FB4D9"/>
+              <stop offset="50%"  stop-color="#A5B8E0"/>
+              <stop offset="100%" stop-color="#B8A8D9"/>
+            </linearGradient>
+            <linearGradient id="opsGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="#D9A8B8"/>
+              <stop offset="50%"  stop-color="#E0B8B0"/>
+              <stop offset="100%" stop-color="#E5C8A0"/>
+            </linearGradient>
+
+            <!-- Full closed loops — used only for stroking the ring visual -->
             <path id="loopDev" d="M 390 170 C 320 40, 90 40, 90 170 C 90 300, 320 300, 390 170 Z"/>
             <path id="loopOps" d="M 390 170 C 460 40, 690 40, 690 170 C 690 300, 460 300, 390 170 Z"/>
+
+            <!-- Four half-paths — each drawn left-to-right so textPath labels stay upright.
+                 Top halves arc over the top; bottom halves arc under the bottom. -->
+            <path id="devTop" d="M  90 170 C  90 40, 320 40, 390 170"/>
+            <path id="devBot" d="M  90 170 C  90 300, 320 300, 390 170"/>
+            <path id="opsTop" d="M 390 170 C 460 40, 690 40, 690 170"/>
+            <path id="opsBot" d="M 390 170 C 460 300, 690 300, 690 170"/>
           </defs>
 
-          <!-- The two thick rings.  Both share (390, 170) — where they visually cross. -->
+          <!-- Ring visuals (thick, gradient stroked) -->
           <use href="#loopDev" class="ring-arc ring-dev"/>
           <use href="#loopOps" class="ring-arc ring-ops"/>
 
-          <!-- Stage labels flow along each loop via textPath.
-               startOffset% is measured along the path length; the top arc runs from 0→50% of each. -->
-          <text class="stage-flow">
-            <textPath href="#loopDev" startOffset="8%">plan</textPath>
-          </text>
-          <text class="stage-flow">
-            <textPath href="#loopDev" startOffset="25%">code</textPath>
-          </text>
-          <text class="stage-flow">
-            <textPath href="#loopDev" startOffset="50%">build</textPath>
-          </text>
-          <text class="stage-flow">
-            <textPath href="#loopDev" startOffset="75%">test</textPath>
-          </text>
+          <!-- Labels along the top halves — arc curves upward, text reads left→right, upright -->
+          <text class="stage-flow"><textPath href="#devTop" startOffset="18%">code</textPath></text>
+          <text class="stage-flow"><textPath href="#devTop" startOffset="72%">plan</textPath></text>
 
-          <text class="stage-flow">
-            <textPath href="#loopOps" startOffset="25%">deploy</textPath>
-          </text>
-          <text class="stage-flow">
-            <textPath href="#loopOps" startOffset="50%">operate</textPath>
-          </text>
-          <text class="stage-flow">
-            <textPath href="#loopOps" startOffset="75%">monitor</textPath>
-          </text>
-          <text class="stage-flow">
-            <textPath href="#loopOps" startOffset="92%">release</textPath>
-          </text>
+          <text class="stage-flow"><textPath href="#opsTop" startOffset="18%">release</textPath></text>
+          <text class="stage-flow"><textPath href="#opsTop" startOffset="72%">deploy</textPath></text>
 
-          <!-- DEV / OPS centre wordmarks — placed in each loop's interior -->
+          <!-- Labels along the bottom halves — arc curves downward, text reads left→right, upright -->
+          <text class="stage-flow"><textPath href="#devBot" startOffset="18%">build</textPath></text>
+          <text class="stage-flow"><textPath href="#devBot" startOffset="72%">test</textPath></text>
+
+          <text class="stage-flow"><textPath href="#opsBot" startOffset="18%">monitor</textPath></text>
+          <text class="stage-flow"><textPath href="#opsBot" startOffset="72%">operate</textPath></text>
+
+          <!-- DEV / OPS centre wordmarks -->
           <text x="240" y="188" text-anchor="middle" class="loop-word">DEV</text>
           <text x="540" y="188" text-anchor="middle" class="loop-word">OPS</text>
 
-          <!-- A dot orbits the full figure-8, crossing through (390, 170) each cycle -->
-          <circle class="loop-orbit" r="5.5" fill="var(--accent)">
+          <!-- Orbit dot — follows the figure-8 -->
+          <circle class="loop-orbit" r="5.5">
             <animateMotion dur="14s" repeatCount="indefinite" rotate="auto"
               path="M 390 170 C 320 40, 90 40, 90 170 C 90 300, 320 300, 390 170 C 460 40, 690 40, 690 170 C 690 300, 460 300, 390 170 Z"/>
           </circle>
@@ -192,8 +195,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js?v=27"></script>
-<script src="topics.js?v=27"></script>
-<script src="definitions.js?v=27"></script>
-<script src="part-exams.js?v=27"></script>
-<script src="manual.js?v=27"></script>
+<script src="config.js?v=28"></script>
+<script src="topics.js?v=28"></script>
+<script src="definitions.js?v=28"></script>
+<script src="part-exams.js?v=28"></script>
+<script src="manual.js?v=28"></script>
