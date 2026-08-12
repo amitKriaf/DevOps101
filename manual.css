@@ -100,6 +100,30 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   min-height: 100vh;
+  position: relative;
+}
+
+/* Pastel aurora wash — same palette as the loop hero, positioned so the eye
+   catches a soft glow at opposite corners without competing with the type. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60vw 45vw at 8% 0%,   rgba(143, 180, 217, 0.32), transparent 62%),
+    radial-gradient(ellipse 55vw 40vw at 100% 8%, rgba(184, 168, 217, 0.28), transparent 62%),
+    radial-gradient(ellipse 50vw 40vw at 92% 100%, rgba(217, 168, 184, 0.30), transparent 62%),
+    radial-gradient(ellipse 55vw 40vw at 0% 100%, rgba(229, 200, 160, 0.28), transparent 62%);
+}
+:root:not([data-theme="light"]) body::before,
+:root[data-theme="dark"] body::before {
+  background:
+    radial-gradient(ellipse 60vw 45vw at 8% 0%,   rgba(56, 195, 172, 0.12), transparent 62%),
+    radial-gradient(ellipse 55vw 40vw at 100% 8%, rgba(143, 128, 195, 0.14), transparent 62%),
+    radial-gradient(ellipse 50vw 40vw at 92% 100%, rgba(217, 118, 152, 0.10), transparent 62%),
+    radial-gradient(ellipse 55vw 40vw at 0% 100%, rgba(224, 168, 112, 0.10), transparent 62%);
 }
 
 ::selection { background: var(--accent); color: var(--accent-ink); }
@@ -218,6 +242,15 @@ button {
   border-bottom: 1px solid var(--rule-hair);
   margin-bottom: 44px;
   flex-wrap: wrap;
+}
+
+/* When reading a chapter or taking an exam, constrain header to reading column
+   width so the rule beneath the header aligns with content below. */
+body.reading .masthead,
+body.reading .ctrl-bar {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .ctrl-status {
@@ -344,6 +377,12 @@ button {
 
 .plate-today {
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><path d='M 0 0 L 24 0 M 0 0 L 0 24' stroke='rgba(28,20,10,0.09)' stroke-width='0.5' fill='none'/></svg>");
+  background-repeat: repeat;
+}
+:root:not([data-theme="light"]) .plate-today,
+:root[data-theme="dark"] .plate-today {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><path d='M 0 0 L 24 0 M 0 0 L 0 24' stroke='rgba(255,240,220,0.07)' stroke-width='0.5' fill='none'/></svg>");
 }
 
 @media (max-width: 720px) {
@@ -480,9 +519,15 @@ button {
   align-items: center;
   padding: 26px clamp(20px, 3vw, 40px);
   gap: 32px;
-  background: var(--ground);
+  background-color: var(--ground);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14'><circle cx='7' cy='7' r='0.9' fill='rgba(28,20,10,0.18)'/></svg>");
+  background-repeat: repeat;
   border-color: var(--rule-hair);
   margin-bottom: 56px;
+}
+:root:not([data-theme="light"]) .plate-def,
+:root[data-theme="dark"] .plate-def {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14'><circle cx='7' cy='7' r='0.9' fill='rgba(255,240,220,0.14)'/></svg>");
 }
 .plate-def > * { padding: 0; }
 @media (max-width: 720px) {
@@ -1042,6 +1087,67 @@ button {
   color: var(--ink-3);
   margin-top: 8px;
   max-width: 64ch;
+}
+
+/* ---------- Chapter navigation (bottom of each topic) ---------- */
+
+.chapter-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 56px;
+  padding-top: 32px;
+  border-top: 1px solid var(--rule-hair);
+  max-width: 68ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+.chapter-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 18px 20px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color .15s ease, background .15s ease;
+}
+.chapter-nav-btn:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.chapter-nav-btn.next { align-items: flex-end; text-align: right; }
+.chapter-nav-btn.placeholder { visibility: hidden; }
+.chapter-nav-dir {
+  font-family: var(--font-display);
+  font-variation-settings: "wght" 600, var(--rec-sans);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.chapter-nav-num {
+  font-family: var(--font-mono);
+  font-variation-settings: var(--rec-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+.chapter-nav-title {
+  font-family: var(--font-headline);
+  font-size: 1.05rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+@media (max-width: 640px) {
+  .chapter-nav { grid-template-columns: 1fr; gap: 12px; margin-top: 40px; padding-top: 24px; }
+  .chapter-nav-btn { padding: 14px 16px; }
+  .chapter-nav-btn.next { align-items: flex-start; text-align: left; }
+  .chapter-nav-btn.placeholder { display: none; }
 }
 .code-block .k { color: var(--ink);    font-weight: 700; }
 .code-block .s { color: var(--success); }

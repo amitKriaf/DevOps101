@@ -283,9 +283,13 @@
 
     document.getElementById('home-view').classList.add('hidden');
     document.getElementById('topic-view').classList.add('active');
+    document.body.classList.add('reading');
     updateHomeBtn();
     if (!opts.preserveScroll) {
       window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    if (!opts.preserveScroll && !opts.fromHistory) {
+      history.pushState({ view: 'topic', id }, '', '#topic-' + id);
     }
 
     const el = document.getElementById('topic-content');
@@ -394,6 +398,28 @@
       <div class="topic-section">
         ${quizSection}
       </div>
+
+      ${(() => {
+        const idx = TOPICS.findIndex(x => x.id === t.id);
+        const prev = idx > 0 ? TOPICS[idx - 1] : null;
+        const next = idx < TOPICS.length - 1 ? TOPICS[idx + 1] : null;
+        if (!prev && !next) return '';
+        const prevHtml = prev ? `
+          <button class="chapter-nav-btn prev" onclick="openTopicById('${prev.id}')">
+            <span class="chapter-nav-dir">← Previous</span>
+            <span class="chapter-nav-num">Ch. ${prev.num}</span>
+            <span class="chapter-nav-title">${prev.title}</span>
+          </button>
+        ` : '<span class="chapter-nav-btn placeholder"></span>';
+        const nextHtml = next ? `
+          <button class="chapter-nav-btn next" onclick="openTopicById('${next.id}')">
+            <span class="chapter-nav-dir">Next →</span>
+            <span class="chapter-nav-num">Ch. ${next.num}</span>
+            <span class="chapter-nav-title">${next.title}</span>
+          </button>
+        ` : '<span class="chapter-nav-btn placeholder"></span>';
+        return `<nav class="chapter-nav">${prevHtml}${nextHtml}</nav>`;
+      })()}
     `;
   }
 
@@ -401,7 +427,7 @@
     const p = progressFor(topicId);
     p.quizStarted = true;
     save();
-    openTopic(topicId);
+    openTopic(topicId, { fromHistory: true });
     const quizEl = document.querySelector('.quiz');
     if (quizEl) quizEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -426,22 +452,26 @@
     p.answers = {};
     p.complete = false;
     save();
-    openTopic(topicId);
+    openTopic(topicId, { fromHistory: true });
   }
 
-  function goHome() {
+  function goHome(opts = {}) {
     state.view = 'home';
     state.currentTopic = null;
     state.currentExam = null;
     document.getElementById('topic-view').classList.remove('active');
     document.getElementById('home-view').classList.remove('hidden');
+    document.body.classList.remove('reading');
     renderHome();
     updateHomeBtn();
     window.scrollTo({ top: 0, behavior: 'instant' });
+    if (!opts.fromHistory) {
+      history.pushState({ view: 'home' }, '', '#');
+    }
   }
 
   // ---------- Part Examinations ----------
-  function startPartExam(partIdx) {
+  function startPartExam(partIdx, opts = {}) {
     const partChapters = TOPICS.filter(t => t.part === partIdx);
     if (!partChapters.length) return;
 
@@ -492,9 +522,13 @@
     state.view = 'exam';
     document.getElementById('home-view').classList.add('hidden');
     document.getElementById('topic-view').classList.add('active');
+    document.body.classList.add('reading');
     updateHomeBtn();
     renderExam();
     window.scrollTo({ top: 0, behavior: 'instant' });
+    if (!opts.fromHistory) {
+      history.pushState({ view: 'exam', partIdx }, '', '#exam-' + partIdx);
+    }
   }
 
   function renderExam() {
@@ -823,12 +857,47 @@
   window.answerQuestion = answerQuestion;
   window.resetQuiz = resetQuiz;
   window.startQuiz = startQuiz;
+  window.openTopicById = (id) => openTopic(id);
 
   initTheme();
   load();
   document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-  document.getElementById('back-link').addEventListener('click', goHome);
-  document.getElementById('home-btn').addEventListener('click', goHome);
+  document.getElementById('back-link').addEventListener('click', () => goHome());
+  document.getElementById('home-btn').addEventListener('click', () => goHome());
   renderHome();
   updateHomeBtn();
   initAuth();
+
+  // Browser history integration — back/forward buttons switch view without reloading.
+  window.addEventListener('popstate', (e) => {
+    const s = e.state || { view: 'home' };
+    if (s.view === 'topic' && s.id) {
+      openTopic(s.id, { fromHistory: true });
+    } else if (s.view === 'exam' && s.partIdx != null) {
+      startPartExam(s.partIdx, { fromHistory: true });
+    } else {
+      goHome({ fromHistory: true });
+    }
+  });
+
+  // Deep-link / restore on initial load from URL hash.
+  const hash = location.hash;
+  if (hash.startsWith('#topic-')) {
+    const id = hash.slice(7);
+    if (TOPICS.find(t => t.id === id)) {
+      history.replaceState({ view: 'topic', id }, '', hash);
+      openTopic(id, { fromHistory: true });
+    } else {
+      history.replaceState({ view: 'home' }, '', '#');
+    }
+  } else if (hash.startsWith('#exam-')) {
+    const partIdx = parseInt(hash.slice(6), 10);
+    if (!isNaN(partIdx)) {
+      history.replaceState({ view: 'exam', partIdx }, '', hash);
+      startPartExam(partIdx, { fromHistory: true });
+    } else {
+      history.replaceState({ view: 'home' }, '', '#');
+    }
+  } else {
+    history.replaceState({ view: 'home' }, '', location.pathname + location.search);
+  }
