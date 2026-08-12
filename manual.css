@@ -39,44 +39,44 @@
   color-scheme: light;
 }
 
-/* Dark theme — deep coffee brown with blue-green accent */
+/* Dark theme — neutral warm-dark (low saturation) with blue-green accent */
 :root:not([data-theme="light"]) {
   @media (prefers-color-scheme: dark) {
-    --ground:        #241A0E;   /* deep coffee — old leather, well-thumbed manual */
-    --surface:       #2E2416;
-    --surface-2:     #38301E;
-    --ink:           #F1E7CE;   /* warm cream on brown */
-    --ink-2:         #A99E82;
-    --ink-3:         #71674F;
-    --rule:          #3B3020;
-    --rule-hair:     #2A2114;
-    --rule-strong:   #F1E7CE;
-    --accent:        #3DC7B1;   /* teal, slightly brightened for warmer ground */
-    --accent-ink:    #0A241F;
-    --accent-quiet:  #163028;
+    --ground:        #1B1712;   /* near-black with whisper of warmth, low saturation */
+    --surface:       #241F19;
+    --surface-2:     #2E2822;
+    --ink:           #EBE4D0;
+    --ink-2:         #A19A87;
+    --ink-3:         #6A6555;
+    --rule:          #2F2A22;
+    --rule-hair:     #221D17;
+    --rule-strong:   #EBE4D0;
+    --accent:        #38C3AC;   /* teal — sits naturally on neutral-warm ground */
+    --accent-ink:    #082019;
+    --accent-quiet:  #12241F;
     --danger:        #F5C400;
-    --success:       #9AB86A;
-    --shadow-lift:   0 1px 0 rgba(0, 0, 0, 0.45), 0 12px 32px -16px rgba(0, 0, 0, 0.75);
+    --success:       #97B667;
+    --shadow-lift:   0 1px 0 rgba(0, 0, 0, 0.4), 0 12px 32px -16px rgba(0, 0, 0, 0.7);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --ground:        #241A0E;
-  --surface:       #2E2416;
-  --surface-2:     #38301E;
-  --ink:           #F1E7CE;
-  --ink-2:         #A99E82;
-  --ink-3:         #71674F;
-  --rule:          #3B3020;
-  --rule-hair:     #2A2114;
-  --rule-strong:   #F1E7CE;
-  --accent:        #3DC7B1;
-  --accent-ink:    #0A241F;
-  --accent-quiet:  #163028;
+  --ground:        #1B1712;
+  --surface:       #241F19;
+  --surface-2:     #2E2822;
+  --ink:           #EBE4D0;
+  --ink-2:         #A19A87;
+  --ink-3:         #6A6555;
+  --rule:          #2F2A22;
+  --rule-hair:     #221D17;
+  --rule-strong:   #EBE4D0;
+  --accent:        #38C3AC;
+  --accent-ink:    #082019;
+  --accent-quiet:  #12241F;
   --danger:        #F5C400;
-  --success:       #9AB86A;
-  --shadow-lift:   0 1px 0 rgba(0, 0, 0, 0.45), 0 12px 32px -16px rgba(0, 0, 0, 0.75);
+  --success:       #97B667;
+  --shadow-lift:   0 1px 0 rgba(0, 0, 0, 0.4), 0 12px 32px -16px rgba(0, 0, 0, 0.7);
   color-scheme: dark;
 }
 
