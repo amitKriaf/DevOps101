@@ -91,7 +91,8 @@ The mechanics — pipelines, stages, runners, artifacts, environments — are th
 
 <span class="k">lint</span>:
   <span class="k">stage</span>: <span class="s">lint</span>
-  <span class="k">script</span>: npm ci &amp;&amp; npm run lint          <span class="c"># fastest &amp; likeliest to fail — first</span>
+  <span class="c"># fast, likely-to-fail — run first</span>
+  <span class="k">script</span>: npm ci &amp;&amp; npm run lint
   <span class="k">cache</span>: { <span class="k">key</span>: node, <span class="k">paths</span>: [node_modules/] }
 
 <span class="k">unit-test</span>:
@@ -101,21 +102,23 @@ The mechanics — pipelines, stages, runners, artifacts, environments — are th
 
 <span class="k">build-image</span>:
   <span class="k">stage</span>: <span class="s">build</span>
+  <span class="c"># the ONE artifact — everything below just promotes it</span>
   <span class="k">script</span>:
     - docker build -t <span class="n">$IMAGE</span> .
-    - docker push <span class="n">$IMAGE</span>                     <span class="c"># the ONE artifact from here on</span>
+    - docker push <span class="n">$IMAGE</span>
 
 <span class="k">deploy-staging</span>:
   <span class="k">stage</span>: <span class="s">deploy-staging</span>
-  <span class="k">environment</span>: { <span class="k">name</span>: <span class="s">staging</span>, <span class="k">url</span>: <span class="s">https://staging.example.com</span> }
+  <span class="k">environment</span>: { <span class="k">name</span>: <span class="s">staging</span> }
   <span class="k">script</span>: kubectl -n staging set image deploy/api api=<span class="n">$IMAGE</span>
   <span class="k">rules</span>: [{ <span class="k">if</span>: <span class="s">'$CI_COMMIT_BRANCH == "main"'</span> }]
 
 <span class="k">deploy-prod</span>:
   <span class="k">stage</span>: <span class="s">deploy-prod</span>
-  <span class="k">environment</span>: { <span class="k">name</span>: <span class="s">production</span>, <span class="k">url</span>: <span class="s">https://example.com</span> }
+  <span class="c"># manual gate — flip to on_success for full CD</span>
+  <span class="k">environment</span>: { <span class="k">name</span>: <span class="s">production</span> }
   <span class="k">script</span>: kubectl -n prod set image deploy/api api=<span class="n">$IMAGE</span>
-  <span class="k">rules</span>: [{ <span class="k">if</span>: <span class="s">'$CI_COMMIT_BRANCH == "main"'</span>, <span class="k">when</span>: <span class="s">manual</span> }]  <span class="c"># CD-style gate</span>`,
+  <span class="k">rules</span>: [{ <span class="k">if</span>: <span class="s">'$CI_COMMIT_BRANCH == "main"'</span>, <span class="k">when</span>: <span class="s">manual</span> }]`,
       codeCap: 'Fast checks first, one build, promoted to staging automatically and to prod on a manual click. Change <code>when: manual</code> to <code>when: on_success</code> to make it Continuous <em>Deployment</em>.',
       quiz: [
         {
@@ -535,6 +538,43 @@ $ kubectl port-forward svc/api 8080:80 -n prod        <span class="c"># local ac
       num: '11',
       title: 'Helm',
       tag: 'The package manager for Kubernetes — templated manifests, values files, releases, rollbacks, dependencies.',
+      figure: {
+        tag: 'Figure 1 · From chart to release',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 240" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="40" width="140" height="120"/>
+            <text x="90" y="58" text-anchor="middle" font-size="11" font-weight="700" stroke="none">chart/</text>
+            <text x="30" y="80" font-size="9" stroke="none" class="fig-muted">Chart.yaml</text>
+            <text x="30" y="94" font-size="9" stroke="none" class="fig-muted">values.yaml   (defaults)</text>
+            <text x="30" y="108" font-size="9" stroke="none" class="fig-muted">templates/</text>
+            <text x="42" y="122" font-size="9" stroke="none" class="fig-muted">deployment.yaml.tpl</text>
+            <text x="42" y="136" font-size="9" stroke="none" class="fig-muted">service.yaml.tpl</text>
+            <text x="42" y="150" font-size="9" stroke="none" class="fig-muted">_helpers.tpl</text>
+          </g>
+          <path d="M 160 100 L 198 100" stroke="currentColor"/><polygon points="198,100 193,97 193,103" fill="currentColor"/>
+          <g>
+            <rect x="200" y="40" width="180" height="120"/>
+            <text x="290" y="58" text-anchor="middle" font-size="11" font-weight="700" stroke="none">values-prod.yaml</text>
+            <text x="290" y="76" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">+ --set overrides</text>
+            <line x1="210" y1="90" x2="370" y2="90" stroke-dasharray="2 3" opacity="0.4"/>
+            <text x="290" y="112" text-anchor="middle" font-size="11" font-weight="700" stroke="none">helm upgrade --install</text>
+            <text x="290" y="130" text-anchor="middle" font-size="9" stroke="none" class="fig-em">--atomic --wait --timeout 5m</text>
+            <text x="290" y="148" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">Go templates → manifests</text>
+          </g>
+          <path d="M 380 100 L 418 100" stroke="currentColor"/><polygon points="418,100 413,97 413,103" fill="currentColor"/>
+          <g>
+            <rect x="420" y="40" width="180" height="120" stroke="var(--accent)"/>
+            <text x="510" y="60" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">Release: api</text>
+            <text x="510" y="78" text-anchor="middle" font-size="9" stroke="none" class="fig-em">rev. 7 · deployed 12:03</text>
+            <text x="510" y="102" text-anchor="middle" font-size="10" stroke="none">Deployment/api</text>
+            <text x="510" y="118" text-anchor="middle" font-size="10" stroke="none">Service/api</text>
+            <text x="510" y="134" text-anchor="middle" font-size="10" stroke="none">Secret/api-config</text>
+            <text x="510" y="152" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">helm rollback api 6 · undo</text>
+          </g>
+          <text x="20" y="204" font-size="9" font-weight="700" letter-spacing="0.2em" stroke="none" class="fig-muted">CHART  ·  VALUES + COMMAND  ·  NAMED RELEASE WITH REVISION</text>
+        </svg>`,
+        caption: 'A chart is a template plus defaults. A release is that template rendered with your values and applied under a name, with a revision number stored in the cluster. Rollback is one command because Helm keeps every rendered revision alongside the current one.',
+      },
       intro: `Kubernetes manifests are verbose and repetitive across environments — the same Deployment in dev, staging, and prod differs only in a handful of values (replicas, image tag, resources, ingress host). Helm bundles the manifests into a <em>chart</em>: a directory of Go-templated YAML plus a defaults file, packageable as a tarball. Users install a chart with their own <em>values</em>, and the whole bundle is managed as a single unit called a <em>release</em>.
 It is the closest thing the Kubernetes ecosystem has to a shared packaging format. Most third-party software you deploy on K8s (Prometheus, Ingress-nginx, cert-manager, Redis, Postgres operators) ships as a Helm chart.`,
       concepts: [
@@ -672,6 +712,48 @@ $ helm test api                                     <span class="c"># run test h
       num: '15',
       title: 'Terraform',
       tag: 'Describe the infrastructure you want; a plan tells you how to get there — providers, state, modules, workspaces, drift.',
+      figure: {
+        tag: 'Figure 1 · Plan is a three-way diff',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="30" y="30" width="150" height="70"/>
+            <text x="105" y="52" text-anchor="middle" font-size="11" font-weight="700" stroke="none">.tf files</text>
+            <text x="105" y="68" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">what you want</text>
+            <text x="105" y="86" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">version-controlled</text>
+
+            <rect x="230" y="30" width="150" height="70"/>
+            <text x="305" y="52" text-anchor="middle" font-size="11" font-weight="700" stroke="none">terraform.tfstate</text>
+            <text x="305" y="68" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">what Terraform thinks</text>
+            <text x="305" y="86" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">exists (last apply)</text>
+
+            <rect x="430" y="30" width="150" height="70"/>
+            <text x="505" y="52" text-anchor="middle" font-size="11" font-weight="700" stroke="none">cloud APIs</text>
+            <text x="505" y="68" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">what actually exists</text>
+            <text x="505" y="86" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">right now</text>
+          </g>
+
+          <g stroke="currentColor" fill="none" stroke-dasharray="3 3">
+            <path d="M 105 100 L 305 140"/>
+            <path d="M 305 100 L 305 140"/>
+            <path d="M 505 100 L 305 140"/>
+          </g>
+
+          <g>
+            <rect x="230" y="140" width="150" height="46" stroke="var(--accent)"/>
+            <text x="305" y="162" text-anchor="middle" font-size="12" font-weight="700" stroke="none" fill="var(--accent)">terraform plan</text>
+            <text x="305" y="178" text-anchor="middle" font-size="9" stroke="none" class="fig-em">the diff · read before apply</text>
+          </g>
+
+          <path d="M 305 186 L 305 210" stroke="currentColor"/><polygon points="305,210 302,204 308,204" fill="currentColor"/>
+          <g>
+            <rect x="230" y="212" width="150" height="34"/>
+            <text x="305" y="234" text-anchor="middle" font-size="11" font-weight="700" stroke="none">terraform apply</text>
+          </g>
+
+          <text x="30" y="240" font-size="9" stroke="none" class="fig-muted">state locked during apply (DynamoDB / TF Cloud)</text>
+        </svg>`,
+        caption: 'Plan is a three-way diff between your code, Terraform\'s state, and cloud reality. Apply executes the plan and updates state. State is precious — corrupt it and Terraform forgets what it owns; lock it during apply so two people can\'t race.',
+      },
       intro: `Terraform is HashiCorp's language and engine for provisioning infrastructure declaratively. You write <code>.tf</code> files in HCL, run <code>terraform plan</code> to see what will change, and <code>terraform apply</code> to make it so. The scope is broader than Kubernetes — Terraform provisions the cluster itself, the VPC around it, the DNS zone in front, the S3 buckets it uses, the IAM roles that let it authenticate.
 The essential trick is the <em>state file</em>: a JSON record of every resource Terraform has ever created and its current attributes. Every plan is a three-way diff between your <code>.tf</code> code (what you want), the state (what Terraform believes exists), and the real world (what the cloud API returns). Losing state is losing Terraform’s memory of what it owns.
 OpenTofu is the community fork of Terraform that arose after HashiCorp changed the licence; for most purposes the two are interchangeable today.`,
@@ -802,6 +884,55 @@ $ terraform apply -replace=aws_instance.web              <span class="c"># force
       num: '16',
       title: 'Ansible',
       tag: 'Configuration management, agentless and stateless — SSH, YAML, and modules that check before they act.',
+      figure: {
+        tag: 'Figure 1 · Playbook layout',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 300" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="30" width="180" height="240"/>
+            <text x="110" y="50" text-anchor="middle" font-size="11" font-weight="700" stroke="none">inventory</text>
+            <text x="30" y="76" font-size="10" stroke="none">[web]</text>
+            <text x="30" y="90" font-size="9" stroke="none" class="fig-muted">web01 · web02 · web03</text>
+            <text x="30" y="112" font-size="10" stroke="none">[db]</text>
+            <text x="30" y="126" font-size="9" stroke="none" class="fig-muted">db-primary</text>
+            <text x="30" y="150" font-size="10" stroke="none">group_vars/</text>
+            <text x="30" y="164" font-size="9" stroke="none" class="fig-muted">all.yml</text>
+            <text x="30" y="178" font-size="9" stroke="none" class="fig-muted">web.yml</text>
+            <text x="30" y="192" font-size="9" stroke="none" class="fig-em">prod_vault.yml 🔒</text>
+            <text x="30" y="216" font-size="10" stroke="none">host_vars/</text>
+            <text x="30" y="230" font-size="9" stroke="none" class="fig-muted">db-primary.yml</text>
+          </g>
+
+          <path d="M 200 150 L 238 150" stroke="currentColor"/><polygon points="238,150 233,147 233,153" fill="currentColor"/>
+
+          <g>
+            <rect x="240" y="30" width="180" height="240"/>
+            <text x="330" y="50" text-anchor="middle" font-size="11" font-weight="700" stroke="none">site.yml + roles/</text>
+            <text x="250" y="76" font-size="9" stroke="none" class="fig-muted">- hosts: web</text>
+            <text x="250" y="90" font-size="9" stroke="none" class="fig-muted">  roles: [nginx, app]</text>
+            <text x="250" y="112" font-size="10" stroke="none">roles/nginx/</text>
+            <text x="260" y="126" font-size="9" stroke="none" class="fig-muted">tasks/main.yml</text>
+            <text x="260" y="140" font-size="9" stroke="none" class="fig-muted">handlers/main.yml</text>
+            <text x="260" y="154" font-size="9" stroke="none" class="fig-muted">templates/*.j2</text>
+            <text x="260" y="168" font-size="9" stroke="none" class="fig-muted">defaults/main.yml</text>
+            <text x="250" y="200" font-size="10" stroke="none">tags: [nginx, config]</text>
+          </g>
+
+          <path d="M 420 150 L 458 150" stroke="currentColor"/><polygon points="458,150 453,147 453,153" fill="currentColor"/>
+
+          <g>
+            <rect x="460" y="30" width="140" height="240" stroke="var(--accent)"/>
+            <text x="530" y="50" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">SSH → host</text>
+            <text x="530" y="78" text-anchor="middle" font-size="9" stroke="none" class="fig-em">stateless</text>
+            <text x="530" y="94" text-anchor="middle" font-size="9" stroke="none" class="fig-em">agentless</text>
+            <text x="530" y="118" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">module runs on target,</text>
+            <text x="530" y="132" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">checks first, then acts</text>
+            <text x="530" y="156" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">changed=false → idempotent</text>
+            <text x="530" y="184" text-anchor="middle" font-size="10" font-weight="700" stroke="none">--check --diff</text>
+            <text x="530" y="198" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">dry-run + preview</text>
+          </g>
+        </svg>`,
+        caption: 'The four ingredients: inventory says who, group_vars say what, playbook + roles say how, SSH does the work. No agent on the target, no state database — every run recomputes desired state, modules ask "is this already true?" before acting.',
+      },
       intro: `Ansible describes how you want a set of machines to be configured — packages installed, files rendered, services running, users created — in ordinary YAML, then makes each machine match by connecting over SSH and running Python modules on the far side. There is no daemon to install on the target, and no database keeping track of state.
 This makes Ansible <em>stateless</em>: every run recomputes desired state from the code and inventory, connects to each host, asks each module "is this already true?", and only acts when it isn\'t. That property — combined with idempotency and its flat learning curve — is why Ansible has stuck around while flashier tools have come and gone.`,
       concepts: [
@@ -934,6 +1065,47 @@ $ ansible web -i inventory/prod.yml -m ping    <span class="c"># ad-hoc: are the
       num: '12',
       title: 'ArgoCD & GitOps',
       tag: 'Git holds desired state; a controller keeps the cluster in agreement — drift, sync waves, App of Apps, ApplicationSets.',
+      figure: {
+        tag: 'Figure 1 · The GitOps reconciliation loop',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="30" y="90" width="150" height="80"/>
+            <text x="105" y="115" text-anchor="middle" font-size="12" font-weight="700" stroke="none">Git repo</text>
+            <text x="105" y="132" text-anchor="middle" font-size="9" stroke="none" class="fig-em">source of truth</text>
+            <text x="105" y="148" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">envs/prod/api/*.yaml</text>
+          </g>
+
+          <g>
+            <rect x="240" y="90" width="150" height="80" stroke="var(--accent)"/>
+            <text x="315" y="115" text-anchor="middle" font-size="12" font-weight="700" stroke="none" fill="var(--accent)">ArgoCD</text>
+            <text x="315" y="132" text-anchor="middle" font-size="9" stroke="none" class="fig-em">controller · in cluster</text>
+            <text x="315" y="148" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">watches · compares · syncs</text>
+          </g>
+
+          <g>
+            <rect x="450" y="90" width="150" height="80"/>
+            <text x="525" y="115" text-anchor="middle" font-size="12" font-weight="700" stroke="none">Kubernetes</text>
+            <text x="525" y="132" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">actual state</text>
+            <text x="525" y="148" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">Deployments / Services</text>
+          </g>
+
+          <g fill="currentColor">
+            <path d="M 180 122 L 238 122" stroke="currentColor"/><polygon points="238,122 233,119 233,125"/>
+            <text x="210" y="115" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">pull</text>
+
+            <path d="M 390 122 L 448 122" stroke="currentColor"/><polygon points="448,122 443,119 443,125"/>
+            <text x="420" y="115" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">apply</text>
+
+            <!-- Drift arrow (feedback) -->
+            <path d="M 525 170 Q 525 220 315 220 Q 105 220 105 170" stroke="var(--accent)" stroke-dasharray="4 4" fill="none"/>
+            <polygon points="105,175 102,168 108,168" fill="var(--accent)"/>
+            <text x="315" y="240" text-anchor="middle" font-size="10" stroke="none" fill="var(--accent)" font-weight="700">drift detected → self-heal reverts to Git</text>
+          </g>
+
+          <text x="30" y="52" font-size="9" font-weight="700" letter-spacing="0.2em" stroke="none" class="fig-muted">GITOPS: GIT DECLARES · A CONTROLLER RECONCILES · REALITY MATCHES</text>
+        </svg>`,
+        caption: 'The controller lives inside the cluster and continuously compares. When someone kubectl-edits a resource, Argo notices the diff and — with self-heal on — reverts it to what Git says. Merging a PR is the only real way to change production.',
+      },
       intro: `GitOps takes CI/CD\'s "declarative pipeline" idea to its logical end: the desired state of your infrastructure lives in a Git repository, and a controller inside the cluster continuously reconciles the running cluster to match. If Git says three replicas, three replicas there will be — and if someone edits the Deployment by hand, ArgoCD will notice the drift and (with self-heal) revert it.
 The consequence is that <em>Git becomes the deployment interface</em>. Merging a PR is deploying. Reverting a commit is rolling back. Access control is who can commit to which paths. It’s the same discipline as CI/CD, just with a controller pulling from Git rather than a pipeline pushing to the cluster.
 ArgoCD is the most-used implementation for Kubernetes; <em>Flux</em> is the other major one, favoured by teams that want Git operations to feel more like <code>kubectl apply</code>.`,
@@ -1055,6 +1227,53 @@ ArgoCD is the most-used implementation for Kubernetes; <em>Flux</em> is the othe
       num: '26',
       title: 'Metrics & Prometheus',
       tag: 'Time series, PromQL, exporters, cardinality, SLOs, alerting — the metrics half of observability.',
+      figure: {
+        tag: 'Figure 1 · Pull-based scraping',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 240" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="90" width="150" height="70" stroke="var(--accent)"/>
+            <text x="95" y="112" text-anchor="middle" font-size="12" font-weight="700" stroke="none" fill="var(--accent)">Prometheus</text>
+            <text x="95" y="130" text-anchor="middle" font-size="9" stroke="none" class="fig-em">scrape every 15s</text>
+            <text x="95" y="146" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">store TSDB · alert · query</text>
+          </g>
+
+          <g stroke="currentColor" fill="none">
+            <path d="M 170 105 L 218 60"/><polygon points="218,60 211,60 213,66" fill="currentColor"/>
+            <path d="M 170 125 L 218 125"/><polygon points="218,125 213,122 213,128" fill="currentColor"/>
+            <path d="M 170 145 L 218 190"/><polygon points="218,190 211,190 213,184" fill="currentColor"/>
+          </g>
+          <text x="192" y="98" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">GET /metrics</text>
+
+          <g>
+            <rect x="220" y="35" width="180" height="50"/>
+            <text x="310" y="57" text-anchor="middle" font-size="10" font-weight="700" stroke="none">app · exposes /metrics</text>
+            <text x="310" y="73" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">counter, gauge, histogram</text>
+
+            <rect x="220" y="100" width="180" height="50"/>
+            <text x="310" y="122" text-anchor="middle" font-size="10" font-weight="700" stroke="none">node_exporter</text>
+            <text x="310" y="138" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">host CPU · mem · disk · net</text>
+
+            <rect x="220" y="165" width="180" height="50"/>
+            <text x="310" y="187" text-anchor="middle" font-size="10" font-weight="700" stroke="none">kube-state-metrics</text>
+            <text x="310" y="203" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">Deployment / Pod / Node state</text>
+          </g>
+
+          <g>
+            <rect x="430" y="35" width="170" height="180"/>
+            <text x="515" y="55" text-anchor="middle" font-size="10" font-weight="700" stroke="none">PromQL</text>
+            <line x1="440" y1="65" x2="590" y2="65" opacity="0.4"/>
+            <text x="440" y="85" font-size="9" font-family="var(--font-mono)" stroke="none" class="fig-muted">rate(http_requests_total</text>
+            <text x="440" y="98" font-size="9" font-family="var(--font-mono)" stroke="none" class="fig-muted">  {status=~"5.."}[5m])</text>
+            <text x="440" y="112" font-size="9" font-family="var(--font-mono)" stroke="none" class="fig-muted">/</text>
+            <text x="440" y="125" font-size="9" font-family="var(--font-mono)" stroke="none" class="fig-muted">rate(http_requests_total[5m])</text>
+            <line x1="440" y1="140" x2="590" y2="140" opacity="0.4"/>
+            <text x="440" y="160" font-size="9" stroke="none" class="fig-em" font-weight="700">alert if &gt; 2% for 5m</text>
+            <text x="440" y="176" font-size="9" stroke="none" class="fig-muted">→ Alertmanager</text>
+            <text x="440" y="192" font-size="9" stroke="none" class="fig-muted">→ PagerDuty / Slack</text>
+          </g>
+        </svg>`,
+        caption: 'Prometheus decides when to scrape, targets expose /metrics on a schedule. Missing scrapes are themselves a signal — `up == 0` alerts you when a target went dark. PromQL turns raw counters into rates, percentiles, SLO burn.',
+      },
       intro: `<em>Metrics</em> are numbers over time — cheap to store at scale, ideal for alerting, indispensable for capacity and cost analysis. This chapter focuses on the metrics pillar and the reference implementation nearly everyone runs: <em>Prometheus</em>. Logs live in [[logs]]; traces live in [[traces]]; the dashboarding and alerting layer that ties them all together lives in [[grafana]].
 Prometheus’s essential design choices are simple and durable: <em>pull-based</em> scraping of <code>/metrics</code> endpoints, a small set of metric types, labels as multi-dimensional keys, a functional query language (<em>PromQL</em>). Every managed offering — Grafana Mimir, Cortex, Thanos, VictoriaMetrics, GCP Managed Prometheus, AWS Managed Prometheus, Datadog’s Prom-compatible endpoint — respects that shape.`,
       concepts: [
@@ -1154,6 +1373,48 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '03',
       title: 'Linux Systems',
       tag: 'The primitives under every container, VM, and cloud instance — systemd, journalctl, permissions, signals, sockets, SSH.',
+      figure: {
+        tag: 'Figure 1 · systemd, journal, and the operator\'s reflex',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <rect x="20" y="20" width="200" height="52"/>
+          <text x="120" y="42" text-anchor="middle" font-size="12" font-weight="700" stroke="none">systemd unit</text>
+          <text x="120" y="60" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">nginx.service · active</text>
+
+          <path d="M 220 46 L 258 46" stroke="currentColor"/><polygon points="258,46 253,43 253,49" fill="currentColor"/>
+          <rect x="260" y="20" width="180" height="52"/>
+          <text x="350" y="42" text-anchor="middle" font-size="12" font-weight="700" stroke="none">journald</text>
+          <text x="350" y="60" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">structured log stream</text>
+
+          <path d="M 440 46 L 478 46" stroke="currentColor"/><polygon points="478,46 473,43 473,49" fill="currentColor"/>
+          <rect x="480" y="20" width="120" height="52" stroke="var(--accent)"/>
+          <text x="540" y="42" text-anchor="middle" font-size="12" font-weight="700" stroke="none" fill="var(--accent)">journalctl</text>
+          <text x="540" y="60" text-anchor="middle" font-size="10" stroke="none" class="fig-em">-u nginx -f</text>
+
+          <text x="20" y="120" font-size="11" font-weight="700" stroke="none">The four-command reflex</text>
+          <g>
+            <rect x="20" y="140" width="140" height="90"/>
+            <text x="90" y="160" text-anchor="middle" font-size="11" font-weight="700" stroke="none">systemctl</text>
+            <text x="90" y="180" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">is it up?</text>
+            <text x="90" y="196" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">status | restart</text>
+
+            <rect x="170" y="140" width="140" height="90"/>
+            <text x="240" y="160" text-anchor="middle" font-size="11" font-weight="700" stroke="none">journalctl</text>
+            <text x="240" y="180" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">what did it say?</text>
+            <text x="240" y="196" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">-u name -f</text>
+
+            <rect x="320" y="140" width="140" height="90"/>
+            <text x="390" y="160" text-anchor="middle" font-size="11" font-weight="700" stroke="none">ss -tulpn</text>
+            <text x="390" y="180" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">what listens?</text>
+            <text x="390" y="196" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">| grep :port</text>
+
+            <rect x="470" y="140" width="130" height="90"/>
+            <text x="535" y="160" text-anchor="middle" font-size="11" font-weight="700" stroke="none">ps / top</text>
+            <text x="535" y="180" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">what runs?</text>
+            <text x="535" y="196" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">cpu · mem · time</text>
+          </g>
+        </svg>`,
+        caption: 'systemctl → journalctl → ss → ps. Every unit writes to the journal; journalctl -u <name> -f is how you catch it in the act; ss shows sockets and their owning process; ps confirms what that process is doing. Four commands that solve most production Linux mysteries.',
+      },
       intro: "Every server-side engineer needs a working knowledge of Linux — not to become a sysadmin, but because when a container misbehaves, when a service won’t start, when memory is disappearing, the answer is on the host. Containers are just Linux processes; a Kubernetes pod is a group of Linux processes; a cloud instance is Linux with a network attached.\nThe skills below are the ones you’ll actually use in production debugging: systemd for services, journalctl for logs, ss/ip for networking, ps/top for processes, permissions & sudo for access, signals for lifecycle, and SSH for reaching the host in the first place.",
       concepts: [
         ['systemd', "The init system on nearly every modern distro. Manages <em>units</em> (services, timers, sockets, mounts, targets). <code>systemctl start | stop | restart | reload | status | enable | disable &lt;unit&gt;</code>. Enable = start on boot; start = start now. <code>daemon-reload</code> after editing a unit file."],
@@ -1212,6 +1473,41 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '04',
       title: 'Package & Dependency Management',
       tag: 'Every language, every OS: declare, lock, install reproducibly, keep the tree small. Learn the pattern once.',
+      figure: {
+        tag: 'Figure 1 · Manifest, lockfile, and the reproducible install',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 240" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="60" width="160" height="120"/>
+            <text x="100" y="80" text-anchor="middle" font-size="11" font-weight="700" stroke="none">package.json</text>
+            <text x="100" y="98" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">human-authored</text>
+            <text x="35" y="122" font-size="9" stroke="none" class="fig-muted">express: ^4.19</text>
+            <text x="35" y="138" font-size="9" stroke="none" class="fig-muted">react:   ^18.3</text>
+            <text x="35" y="154" font-size="9" stroke="none" class="fig-muted">pg:      ~8.11</text>
+            <text x="35" y="170" font-size="9" stroke="none" class="fig-muted">…</text>
+          </g>
+          <path d="M 180 120 L 218 120" stroke="currentColor"/><polygon points="218,120 213,117 213,123" fill="currentColor"/>
+          <text x="199" y="112" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">resolve</text>
+          <g>
+            <rect x="220" y="60" width="180" height="120" stroke="var(--accent)"/>
+            <text x="310" y="80" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">package-lock.json</text>
+            <text x="310" y="98" text-anchor="middle" font-size="9" stroke="none" class="fig-em">exact tree · hashes</text>
+            <text x="235" y="122" font-size="9" stroke="none" class="fig-muted">express@4.19.2  sha…</text>
+            <text x="235" y="138" font-size="9" stroke="none" class="fig-muted">react@18.3.1    sha…</text>
+            <text x="235" y="154" font-size="9" stroke="none" class="fig-muted">pg@8.11.5       sha…</text>
+            <text x="235" y="170" font-size="9" stroke="none" class="fig-muted">+ 583 transitive</text>
+          </g>
+          <path d="M 400 120 L 438 120" stroke="currentColor"/><polygon points="438,120 433,117 433,123" fill="currentColor"/>
+          <g>
+            <rect x="440" y="60" width="160" height="120"/>
+            <text x="520" y="82" text-anchor="middle" font-size="11" font-weight="700" stroke="none">node_modules/</text>
+            <text x="520" y="100" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">materialised tree</text>
+            <text x="520" y="130" text-anchor="middle" font-size="10" stroke="none" class="fig-em" font-weight="700">npm ci</text>
+            <text x="520" y="146" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">strict · fails on drift</text>
+          </g>
+          <text x="20" y="34" font-size="9" font-weight="700" stroke="none" class="fig-muted" letter-spacing="0.2em">DECLARE  →  LOCK  →  INSTALL</text>
+        </svg>`,
+        caption: 'Every ecosystem — npm, pip, Composer, Cargo, go.mod — walks the same three steps. Commit the lockfile; use the strict-install command in CI (npm ci, pip install --require-hashes, cargo build --locked). Reproducibility isn\'t a discipline; it\'s a flag you remember to pass.',
+      },
       intro: "Nothing you write runs in isolation. Every language and every OS has a package ecosystem, and building software professionally is largely the art of managing what depends on what — pinning what shouldn’t drift, updating what should, and keeping the transitive tree from becoming a security liability.\nThe mechanics differ (npm for Node, pip/poetry/uv for Python, Composer for PHP, Cargo for Rust, apt/dnf/apk for OS packages) but the principles are identical: declare dependencies explicitly, lock exact resolved versions, install reproducibly in CI, and audit regularly.",
       concepts: [
         ['Manifest', "The human-authored file that <em>declares</em> what your project depends on and at what version ranges. <code>package.json</code>, <code>pyproject.toml</code>, <code>composer.json</code>, <code>Cargo.toml</code>, <code>go.mod</code>. Contains ranges, not exact versions."],
@@ -1268,6 +1564,48 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '05',
       title: 'DNS & Core Networking',
       tag: 'Names, ports, TCP, HTTP status codes, caching — the plumbing under every request.',
+      figure: {
+        tag: 'Figure 1 · The DNS resolver chain',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 200" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="70" width="100" height="60"/>
+            <text x="70" y="94" text-anchor="middle" font-size="11" font-weight="700" stroke="none">client</text>
+            <text x="70" y="112" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">your app</text>
+
+            <rect x="150" y="70" width="100" height="60"/>
+            <text x="200" y="94" text-anchor="middle" font-size="11" font-weight="700" stroke="none">recursive</text>
+            <text x="200" y="112" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">1.1.1.1 · caches</text>
+
+            <rect x="280" y="70" width="80" height="60"/>
+            <text x="320" y="94" text-anchor="middle" font-size="11" font-weight="700" stroke="none">root</text>
+            <text x="320" y="112" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">.</text>
+
+            <rect x="390" y="70" width="80" height="60"/>
+            <text x="430" y="94" text-anchor="middle" font-size="11" font-weight="700" stroke="none">TLD</text>
+            <text x="430" y="112" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">.com</text>
+
+            <rect x="500" y="70" width="100" height="60"/>
+            <text x="550" y="94" text-anchor="middle" font-size="11" font-weight="700" stroke="none">authoritative</text>
+            <text x="550" y="112" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">example.com</text>
+          </g>
+          <g fill="currentColor">
+            <path d="M 120 100 L 148 100" stroke="currentColor"/><polygon points="148,100 143,97 143,103"/>
+            <path d="M 250 100 L 278 100" stroke="currentColor"/><polygon points="278,100 273,97 273,103"/>
+            <path d="M 360 100 L 388 100" stroke="currentColor"/><polygon points="388,100 383,97 383,103"/>
+            <path d="M 470 100 L 498 100" stroke="currentColor"/><polygon points="498,100 493,97 493,103"/>
+          </g>
+          <g stroke="var(--accent)" fill="var(--accent)" stroke-dasharray="3 3">
+            <path d="M 550 130 Q 300 190 70 130" fill="none"/>
+            <text x="310" y="182" text-anchor="middle" font-size="10" stroke="none" font-weight="700">A record → 93.184.216.34</text>
+          </g>
+          <text x="70" y="42" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">dig example.com</text>
+          <text x="200" y="42" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">cache hit? return.</text>
+          <text x="320" y="42" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">who .com?</text>
+          <text x="430" y="42" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">who example?</text>
+          <text x="550" y="42" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">the answer</text>
+        </svg>`,
+        caption: 'A DNS lookup walks four servers (worst case) before you get an IP. Every step caches — that\'s why a change with a low TTL propagates fast, and why an expired-cache issue can seem geographically random.',
+      },
       intro: "DNS turns human names into machine addresses; without it, you’d be typing <code>172.217.169.14</code> instead of google.com. Every request your service makes to another service begins with a DNS lookup, and <em>misunderstood DNS</em> is behind a startling percentage of production outages — a stale cache, a low TTL that wasn’t low enough before the cutover, a CNAME chain that broke behind a load balancer.\nBelow the name is the transport (TCP, UDP), above it are the ports and services those transports carry, and framing it all is HTTP with its methods and status codes.",
       concepts: [
         ['Record types', "<code>A</code> (name → IPv4), <code>AAAA</code> (name → IPv6), <code>CNAME</code> (name → another name; can’t be at zone apex in classic DNS), <code>MX</code> (mail servers, prioritised), <code>TXT</code> (arbitrary text; SPF, DKIM, DMARC, service verification), <code>SRV</code> (host + port + priority for a service), <code>NS</code> (which nameservers are authoritative for a zone), <code>PTR</code> (IP → name, reverse DNS)."],
@@ -1323,6 +1661,45 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '06',
       title: 'Nginx & Reverse Proxies',
       tag: 'The front door of a production system — TLS, load balancing, caching, headers, rate-limiting, all before your app sees a byte.',
+      figure: {
+        tag: 'Figure 1 · Reverse proxy — one front, many backends',
+        svg: `<svg class="figure-svg" viewBox="0 0 560 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="105" width="90" height="50"/>
+            <text x="65" y="127" text-anchor="middle" font-size="11" font-weight="700" stroke="none">client</text>
+            <text x="65" y="143" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">HTTPS</text>
+          </g>
+          <g stroke="var(--accent)" stroke-width="1.5">
+            <rect x="180" y="70" width="160" height="120"/>
+            <text x="260" y="94" text-anchor="middle" font-size="12" font-weight="700" stroke="none" fill="var(--accent)">nginx</text>
+            <text x="260" y="114" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">TLS terminate</text>
+            <text x="260" y="132" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">rate limit</text>
+            <text x="260" y="150" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">cache</text>
+            <text x="260" y="168" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">least_conn balance</text>
+          </g>
+          <g>
+            <rect x="410" y="30" width="130" height="42"/>
+            <text x="475" y="47" text-anchor="middle" font-size="10" font-weight="700" stroke="none">app-1 · :8080</text>
+            <text x="475" y="62" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">plain HTTP inside</text>
+
+            <rect x="410" y="110" width="130" height="42"/>
+            <text x="475" y="127" text-anchor="middle" font-size="10" font-weight="700" stroke="none">app-2 · :8080</text>
+            <text x="475" y="142" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">plain HTTP inside</text>
+
+            <rect x="410" y="190" width="130" height="42"/>
+            <text x="475" y="207" text-anchor="middle" font-size="10" font-weight="700" stroke="none">app-3 · :8080</text>
+            <text x="475" y="222" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">plain HTTP inside</text>
+          </g>
+          <g fill="currentColor">
+            <path d="M 110 130 L 178 130" stroke="currentColor"/><polygon points="178,130 173,127 173,133"/>
+            <path d="M 340 100 L 408 51" stroke="currentColor"/><polygon points="408,51 400,52 403,58"/>
+            <path d="M 340 130 L 408 131" stroke="currentColor"/><polygon points="408,131 403,128 403,134"/>
+            <path d="M 340 160 L 408 211" stroke="currentColor"/><polygon points="408,211 403,206 400,211"/>
+          </g>
+          <text x="140" y="180" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">443/tcp</text>
+        </svg>`,
+        caption: 'The reverse proxy sits between the internet and your app. It terminates TLS once, load-balances, caches, and rate-limits — so the backends stay boring, plain-HTTP, cert-free processes doing the actual work.',
+      },
       intro: "A reverse proxy sits in front of your servers and accepts traffic on their behalf — terminating TLS, load-balancing across replicas, caching responses, injecting/rewriting headers, rate-limiting abusive clients, dropping malformed requests. It is the piece of the stack a request from the internet talks to first, and the natural home for concerns you don’t want repeated in every backend.\nThe three you’ll actually meet: <em>nginx</em> — the default reverse proxy for over a decade, small, fast, endlessly configurable; <em>Caddy</em> — modern Go server whose killer feature is automatic HTTPS via Let’s Encrypt with essentially no config; <em>HAProxy</em> — the serious high-performance TCP/HTTP load balancer, still the choice for the biggest fleets. Cloud offerings (AWS ALB, GCP HTTPS LB, Cloudflare) do the same job as managed services.",
       concepts: [
         ['Reverse proxy vs forward proxy', "A <em>reverse</em> proxy represents the server to the client — client hits proxy, proxy forwards to backend. A <em>forward</em> proxy represents the client to the server — client hits proxy on the way <em>out</em>, proxy forwards to arbitrary destinations (corporate egress, Squid). Same idea, opposite direction."],
@@ -1381,6 +1758,41 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '07',
       title: 'TLS, SSL & Certificates',
       tag: 'The handshake that makes HTTPS secure — certificates, chains, ACME, mTLS, and the rotation that keeps you out of the news.',
+      figure: {
+        tag: 'Figure 1 · The TLS 1.3 handshake',
+        svg: `<svg class="figure-svg" viewBox="0 0 560 290" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="20" width="140" height="42"/>
+            <text x="90" y="42" text-anchor="middle" font-size="12" font-weight="700" stroke="none">client</text>
+            <text x="90" y="56" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">browser / curl / sdk</text>
+
+            <rect x="400" y="20" width="140" height="42"/>
+            <text x="470" y="42" text-anchor="middle" font-size="12" font-weight="700" stroke="none">server</text>
+            <text x="470" y="56" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">holds private key + cert</text>
+
+            <line x1="90" y1="62" x2="90" y2="260" stroke-dasharray="2 3" opacity="0.4"/>
+            <line x1="470" y1="62" x2="470" y2="260" stroke-dasharray="2 3" opacity="0.4"/>
+          </g>
+          <g fill="currentColor" stroke="currentColor">
+            <path d="M 100 90 L 458 90"/><polygon points="458,90 452,87 452,93"/>
+            <text x="280" y="82" text-anchor="middle" font-size="10" stroke="none">ClientHello · SNI · cipher suites · random_c · key_share</text>
+
+            <path d="M 460 130 L 102 130"/><polygon points="102,130 108,127 108,133"/>
+            <text x="280" y="122" text-anchor="middle" font-size="10" stroke="none">ServerHello · chosen cipher · random_s · key_share · {cert, ...}</text>
+
+            <line x1="90" y1="160" x2="470" y2="160" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="280" y="153" text-anchor="middle" font-size="10" stroke="none" fill="var(--accent)" font-weight="700">both derive session key from randoms + key_shares</text>
+
+            <path d="M 100 195 L 458 195"/><polygon points="458,195 452,192 452,198"/>
+            <text x="280" y="188" text-anchor="middle" font-size="10" stroke="none">Finished · verify_data (MAC of transcript)</text>
+
+            <line x1="90" y1="230" x2="470" y2="230" stroke="var(--accent)" stroke-width="2"/>
+            <text x="280" y="222" text-anchor="middle" font-size="11" stroke="none" fill="var(--accent)" font-weight="700">encrypted application data</text>
+          </g>
+          <text x="20" y="278" font-size="9" stroke="none" class="fig-muted">1 RTT total (TLS 1.3). TLS 1.2 was 2 RTT.</text>
+        </svg>`,
+        caption: 'The TLS 1.3 handshake in one round-trip: client proposes ciphers and its share of the ephemeral key, server picks one and sends back its share plus the cert, both sides derive the same session key from the exchange, and the encrypted tunnel is open.',
+      },
       intro: "TLS is what makes HTTPS actually secure — a handshake at the start of a TCP connection that establishes an encrypted, authenticated channel between client and server. SSL is TLS’s predecessor; the names are used interchangeably out of habit, though every current implementation is TLS (1.2 or 1.3 — everything older is deprecated).\nThe core object is the certificate: a public key bound to an identity (a domain name, or a machine identity, or a person), signed by a certificate authority (CA) the client already trusts. Learn to read a certificate, understand the chain, and automate renewal — and you’ll close the door on a whole class of production embarrassments.",
       concepts: [
         ['Symmetric vs asymmetric crypto', "TLS uses both. <em>Asymmetric</em> (RSA, ECDSA, Ed25519) — different keys for encrypt and decrypt; used in the handshake to establish trust and exchange a session key. <em>Symmetric</em> (AES-GCM, ChaCha20-Poly1305) — same key for encrypt/decrypt; fast, used for the bulk of the traffic once the session key is set."],
@@ -1439,6 +1851,47 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '08',
       title: 'VPN, BGP & Cloud Networking',
       tag: 'Joining networks that shouldn’t naturally see each other — safely, cheaply, and at scale.',
+      figure: {
+        tag: 'Figure 1 · A VPC with public and private subnets',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 280" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <!-- VPC outer -->
+          <rect x="20" y="20" width="580" height="240" stroke-dasharray="4 4"/>
+          <text x="30" y="38" font-size="10" font-weight="700" stroke="none" class="fig-em">VPC 10.0.0.0/16</text>
+
+          <!-- Internet Gateway -->
+          <rect x="270" y="60" width="80" height="34"/>
+          <text x="310" y="82" text-anchor="middle" font-size="10" font-weight="700" stroke="none">IGW</text>
+          <path d="M 310 60 L 310 30" stroke="currentColor"/><polygon points="310,30 307,36 313,36" fill="currentColor"/>
+          <text x="360" y="34" font-size="10" stroke="none" class="fig-muted">internet</text>
+
+          <!-- Public subnet -->
+          <rect x="50" y="120" width="240" height="110"/>
+          <text x="60" y="138" font-size="10" font-weight="700" stroke="none">Public subnet · 10.0.1.0/24</text>
+          <rect x="70" y="150" width="90" height="34"/>
+          <text x="115" y="171" text-anchor="middle" font-size="10" stroke="none">Load Bal.</text>
+          <rect x="170" y="150" width="90" height="34"/>
+          <text x="215" y="171" text-anchor="middle" font-size="10" stroke="none">NAT gw</text>
+          <text x="60" y="212" font-size="9" stroke="none" class="fig-muted">route: 0.0.0.0/0 → IGW</text>
+
+          <!-- Private subnet -->
+          <rect x="330" y="120" width="240" height="110"/>
+          <text x="340" y="138" font-size="10" font-weight="700" stroke="none">Private subnet · 10.0.10.0/24</text>
+          <rect x="350" y="150" width="90" height="34"/>
+          <text x="395" y="171" text-anchor="middle" font-size="10" stroke="none">app</text>
+          <rect x="450" y="150" width="100" height="34"/>
+          <text x="500" y="171" text-anchor="middle" font-size="10" stroke="none">database</text>
+          <text x="340" y="212" font-size="9" stroke="none" class="fig-muted">route: 0.0.0.0/0 → NAT (egress only)</text>
+
+          <!-- Connections -->
+          <g stroke="currentColor" fill="currentColor">
+            <path d="M 260 167 L 348 167" stroke-dasharray="2 3" opacity="0.5"/>
+            <path d="M 160 167 L 168 167" opacity="0.6"/>
+          </g>
+          <line x1="215" y1="150" x2="310" y2="94" stroke-dasharray="1 3" opacity="0.4"/>
+          <line x1="115" y1="150" x2="310" y2="94" stroke-dasharray="1 3" opacity="0.4"/>
+        </svg>`,
+        caption: 'A production VPC in miniature. The load balancer lives in the public subnet and is reachable from the internet; the app and database live in the private subnet with no direct inbound reachability. Egress from private happens through the NAT gateway — the line that shows up on your cloud bill.',
+      },
       intro: "Once your infrastructure spans more than one place — cloud + on-prem, two regions, a mix of accounts — you need networking that stitches them. VPNs give you encrypted tunnels between networks or from a laptop into a network. BGP is how the internet (and every big cloud’s backbone) exchanges routes. VPC design decides who can reach what.\nMost outages at scale end up here: a route missing, a peering broken, a security group too tight, a NAT gateway silently costing a fortune. This chapter covers the primitives — enough to be dangerous with your cloud architect and to read a diagram of the corporate WAN without panicking.",
       concepts: [
         ['VPN — site-to-site vs client', "<em>Site-to-site</em>: two entire networks joined by an encrypted tunnel — office ↔ cloud, VPC ↔ VPC in another provider, on-prem ↔ AWS via a Customer Gateway. <em>Client VPN</em>: one device joins one network (Cloudflare WARP, Tailscale, OpenVPN AS)."],
@@ -1498,6 +1951,56 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '13',
       title: 'Git — Beyond the Basics',
       tag: 'rebase, cherry-pick, bisect, reflog, worktree, hooks — the tools that make git feel like a lever, not a chore.',
+      figure: {
+        tag: 'Figure 1 · Merge vs rebase, in shape',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round">
+          <line x1="310" y1="20" x2="310" y2="240" stroke-dasharray="4 4" opacity="0.5"/>
+          <text x="150" y="38" text-anchor="middle" font-size="10" font-weight="700" stroke="none" class="fig-muted">MERGE</text>
+          <text x="470" y="38" text-anchor="middle" font-size="10" font-weight="700" stroke="none" class="fig-muted">REBASE</text>
+
+          <!-- MERGE side -->
+          <g fill="currentColor">
+            <circle cx="40"  cy="120" r="6"/>
+            <circle cx="90"  cy="120" r="6"/>
+            <circle cx="140" cy="90"  r="6"/>
+            <circle cx="190" cy="90"  r="6"/>
+            <circle cx="240" cy="120" r="6"/>
+            <circle cx="280" cy="120" r="6" stroke="var(--accent)" stroke-width="2" fill="var(--ground)"/>
+          </g>
+          <g stroke="currentColor" fill="none">
+            <line x1="46" y1="120" x2="84" y2="120"/>
+            <line x1="96" y1="118" x2="136" y2="92"/>
+            <line x1="146" y1="90"  x2="184" y2="90"/>
+            <line x1="196" y1="92"  x2="234" y2="118"/>
+            <line x1="96" y1="122" x2="234" y2="122"/>
+            <line x1="246" y1="120" x2="274" y2="120"/>
+          </g>
+          <text x="150" y="180" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">history preserved</text>
+          <text x="150" y="196" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">merge commit above</text>
+          <text x="285" y="146" font-size="9" stroke="none" fill="var(--accent)" font-weight="700">merge</text>
+
+          <!-- REBASE side -->
+          <g fill="currentColor">
+            <circle cx="330" cy="120" r="6"/>
+            <circle cx="380" cy="120" r="6"/>
+            <circle cx="430" cy="120" r="6"/>
+            <circle cx="480" cy="120" r="6"/>
+            <circle cx="530" cy="120" r="6"/>
+            <circle cx="580" cy="120" r="6" stroke="var(--accent)" stroke-width="2" fill="var(--ground)"/>
+          </g>
+          <g stroke="currentColor" fill="none">
+            <line x1="336" y1="120" x2="374" y2="120"/>
+            <line x1="386" y1="120" x2="424" y2="120"/>
+            <line x1="436" y1="120" x2="474" y2="120"/>
+            <line x1="486" y1="120" x2="524" y2="120"/>
+            <line x1="536" y1="120" x2="574" y2="120"/>
+          </g>
+          <text x="470" y="180" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">linear history</text>
+          <text x="470" y="196" text-anchor="middle" font-size="10" stroke="none" class="fig-muted">commits replayed on tip</text>
+          <text x="585" y="146" font-size="9" stroke="none" fill="var(--accent)" font-weight="700">HEAD</text>
+        </svg>`,
+        caption: 'Same set of commits, two shapes. Merge preserves the branch history and adds a merge commit on top — honest, unrevised. Rebase replays your commits on the target tip — clean, linear, but only safe on branches you haven\'t pushed yet.',
+      },
       intro: "Everyone knows <code>commit</code> and <code>push</code>. Where teams diverge in productivity is what happens next: how they handle history, how they recover from mistakes, how they investigate regressions, and how they resolve the inevitable conflicts. Fluent git users have almost never <em>lost</em> work — because they know git rarely deletes anything, and the reflog is a safety net for almost every catastrophe.\nThis chapter is the second layer of git — rebase, cherry-pick, bisect, reflog, worktree, hooks — the tools that separate a fluent user from someone who fights the tool.",
       concepts: [
         ['Objects, refs, HEAD', "Git stores every version as a <em>commit object</em>, addressable by its SHA-1 hash. <em>Branches</em> are just movable pointers (refs) to commits; <em>tags</em> are immovable ones. <em>HEAD</em> is your current position — usually attached to a branch, occasionally <em>detached</em> pointing at a specific commit. Understanding this dissolves 90% of git confusion."],
@@ -1555,6 +2058,55 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '17',
       title: 'Cloud Fundamentals',
       tag: 'Regions, VPCs, subnets, storage tiers, managed services, cost — the primitives that AWS, GCP, and Azure all share.',
+      figure: {
+        tag: 'Figure 1 · Region / AZ / VPC hierarchy',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 300" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="20" width="580" height="260" stroke="currentColor"/>
+            <text x="35" y="40" font-size="11" font-weight="700" stroke="none">Region · eu-west-1</text>
+            <text x="35" y="54" font-size="9" stroke="none" class="fig-muted">geographic area · multiple physically-isolated datacentres</text>
+          </g>
+
+          <g>
+            <rect x="40" y="80" width="270" height="180" stroke-dasharray="4 4"/>
+            <text x="55" y="100" font-size="10" font-weight="700" stroke="none">AZ · eu-west-1a</text>
+
+            <rect x="60" y="120" width="230" height="60"/>
+            <text x="70" y="138" font-size="9" font-weight="700" stroke="none" class="fig-em">public subnet 10.0.1.0/24</text>
+            <rect x="80" y="146" width="90" height="26"/>
+            <text x="125" y="162" text-anchor="middle" font-size="9" stroke="none">LB</text>
+            <rect x="180" y="146" width="90" height="26"/>
+            <text x="225" y="162" text-anchor="middle" font-size="9" stroke="none">NAT</text>
+
+            <rect x="60" y="190" width="230" height="60"/>
+            <text x="70" y="208" font-size="9" font-weight="700" stroke="none">private subnet 10.0.10.0/24</text>
+            <rect x="80" y="216" width="90" height="26"/>
+            <text x="125" y="232" text-anchor="middle" font-size="9" stroke="none">app</text>
+            <rect x="180" y="216" width="90" height="26"/>
+            <text x="225" y="232" text-anchor="middle" font-size="9" stroke="none">db</text>
+          </g>
+
+          <g>
+            <rect x="330" y="80" width="250" height="180" stroke-dasharray="4 4"/>
+            <text x="345" y="100" font-size="10" font-weight="700" stroke="none">AZ · eu-west-1b</text>
+
+            <rect x="350" y="120" width="210" height="60"/>
+            <text x="360" y="138" font-size="9" font-weight="700" stroke="none" class="fig-em">public subnet 10.0.2.0/24</text>
+            <rect x="370" y="146" width="80" height="26"/>
+            <text x="410" y="162" text-anchor="middle" font-size="9" stroke="none">LB</text>
+            <rect x="460" y="146" width="80" height="26"/>
+            <text x="500" y="162" text-anchor="middle" font-size="9" stroke="none">NAT</text>
+
+            <rect x="350" y="190" width="210" height="60"/>
+            <text x="360" y="208" font-size="9" font-weight="700" stroke="none">private subnet 10.0.11.0/24</text>
+            <rect x="370" y="216" width="80" height="26"/>
+            <text x="410" y="232" text-anchor="middle" font-size="9" stroke="none">app</text>
+            <rect x="460" y="216" width="80" height="26"/>
+            <text x="500" y="232" text-anchor="middle" font-size="9" stroke="none">db-replica</text>
+          </g>
+        </svg>`,
+        caption: 'A production workload lives across multiple AZs inside one region. Public subnets face the internet (LB, NAT); private subnets don\'t. AZs are physically separated so a single datacentre outage takes down one column, not both. Design assumes this failure will happen.',
+      },
       intro: "AWS, GCP, and Azure look different on the surface — different names, different consoles, different quirks — but their core primitives are close cousins. Understanding regions, availability zones, VPCs, subnets, security groups, IAM, storage tiers, and managed services is the <em>durable</em> knowledge. Console UIs change every quarter; these concepts don’t.\nThe biggest early wins are architectural: keep private workloads in private subnets, expose only what needs exposing, design across AZs so a single-datacentre failure doesn’t take you out, and stay on managed services until you have a real reason to run your own. The biggest early <em>losses</em> are almost always cost: NAT egress, unused snapshots, forgotten load balancers, cross-AZ traffic. Set up billing alerts on day one.",
       concepts: [
         ['Region & Availability Zone', "<em>Region</em>: a geographic area (<code>eu-west-1</code>, <code>us-central1</code>, <code>westeurope</code>). <em>AZ</em>: an isolated datacentre within a region (typically 3 per region). Multi-AZ = resilience against one DC failure. Multi-region = disaster recovery + latency to distant users. Most workloads need multi-AZ; only some need multi-region."],
@@ -1612,6 +2164,43 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '18',
       title: 'RBAC, IAM & Access Control',
       tag: 'Who can do what, to which resource, under which conditions — principals, roles, policies, workload identity, least privilege.',
+      figure: {
+        tag: 'Figure 1 · Principal · Role · Resource',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 250" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="80" width="150" height="70"/>
+            <text x="95" y="102" text-anchor="middle" font-size="11" font-weight="700" stroke="none">Principal</text>
+            <text x="95" y="120" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">user · group · SA</text>
+            <text x="95" y="136" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">workload identity</text>
+          </g>
+
+          <path d="M 170 115 L 218 115" stroke="currentColor"/><polygon points="218,115 213,112 213,118" fill="currentColor"/>
+          <text x="194" y="107" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">is assigned</text>
+
+          <g>
+            <rect x="220" y="80" width="150" height="70" stroke="var(--accent)"/>
+            <text x="295" y="102" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">Role</text>
+            <text x="295" y="120" text-anchor="middle" font-size="9" stroke="none" class="fig-em">bundle of verbs</text>
+            <text x="295" y="136" text-anchor="middle" font-size="9" stroke="none" class="fig-em">on resources</text>
+          </g>
+
+          <path d="M 370 115 L 418 115" stroke="currentColor"/><polygon points="418,115 413,112 413,118" fill="currentColor"/>
+          <text x="394" y="107" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">grants</text>
+
+          <g>
+            <rect x="420" y="80" width="180" height="70"/>
+            <text x="510" y="102" text-anchor="middle" font-size="11" font-weight="700" stroke="none">Resource · verb</text>
+            <text x="510" y="120" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">s3:GetObject on acme-logs</text>
+            <text x="510" y="136" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">get, list, watch on pods</text>
+          </g>
+
+          <g stroke="var(--accent)" fill="none" stroke-dasharray="3 3">
+            <path d="M 95 150 Q 95 200 510 200 Q 510 200 510 150"/>
+            <text x="300" y="220" text-anchor="middle" font-size="10" stroke="none" fill="var(--accent)" font-weight="700">Never bind a principal to a resource directly.  Only through a role.</text>
+          </g>
+        </svg>`,
+        caption: 'Every access-control system reduces to this: a principal is assigned a role, the role grants verbs on resources. The rule that keeps you sane at scale — never grant a resource directly to a principal. Change the role once; every principal wearing it moves with you.',
+      },
       intro: "Access control decides who can do what, to which resource, under which conditions. <em>RBAC</em> — Role-Based Access Control — is the dominant model in cloud and Kubernetes: grant permissions to <em>roles</em>, assign roles to <em>principals</em>, never grant permissions to principals directly. That way you change the role once and everyone assigned inherits the change.\nCloud platforms model the same primitives — principals, permissions, resources, policies — under the name <em>IAM</em>. AWS IAM, GCP IAM, Azure Entra ID all do the same job with different words. The mature approach layers identity on top: humans authenticate via SSO to an identity provider (Okta, Google Workspace, Azure AD), and machines authenticate via <em>workload identity</em> (short-lived tokens bound to a workload) instead of long-lived static credentials.",
       concepts: [
         ['Principal', "The “who.” A human user (via SSO), a group, a role, a service account, or a workload identity. Everything that acts against an API authenticates <em>as</em> some principal."],
@@ -1669,6 +2258,44 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '19',
       title: 'Databases, Migrations & Proxies',
       tag: 'Scaling around the database — pools, replicas, migrations, transactions, and the tools that hide the seams.',
+      figure: {
+        tag: 'Figure 1 · Scale around the primary, not through it',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="90" width="120" height="60"/>
+            <text x="80" y="112" text-anchor="middle" font-size="11" font-weight="700" stroke="none">app fleet</text>
+            <text x="80" y="128" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">2000 conns</text>
+          </g>
+          <path d="M 140 120 L 178 120" stroke="currentColor"/><polygon points="178,120 173,117 173,123" fill="currentColor"/>
+          <g>
+            <rect x="180" y="90" width="140" height="60" stroke="var(--accent)"/>
+            <text x="250" y="112" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">PgBouncer</text>
+            <text x="250" y="128" text-anchor="middle" font-size="9" stroke="none" class="fig-em">txn pool</text>
+          </g>
+          <g fill="currentColor">
+            <path d="M 320 105 L 400 55" stroke="currentColor"/><polygon points="400,55 392,55 396,61" fill="currentColor"/>
+            <text x="360" y="70" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">writes</text>
+            <path d="M 320 135 L 400 190" stroke="currentColor"/><polygon points="400,190 392,187 396,183" fill="currentColor"/>
+            <text x="360" y="180" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">reads (with lag)</text>
+          </g>
+          <g>
+            <rect x="400" y="30" width="180" height="60"/>
+            <text x="490" y="52" text-anchor="middle" font-size="12" font-weight="700" stroke="none">primary</text>
+            <text x="490" y="68" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">20 real conns · writes go here</text>
+
+            <rect x="400" y="120" width="180" height="40"/>
+            <text x="490" y="142" text-anchor="middle" font-size="10" font-weight="700" stroke="none">read replica A</text>
+
+            <rect x="400" y="170" width="180" height="40"/>
+            <text x="490" y="192" text-anchor="middle" font-size="10" font-weight="700" stroke="none">read replica B</text>
+
+            <path d="M 490 90 L 490 118" stroke="currentColor" stroke-dasharray="2 2" opacity="0.5"/>
+            <path d="M 490 90 L 490 168" stroke="currentColor" stroke-dasharray="2 2" opacity="0.5"/>
+            <text x="590" y="130" text-anchor="middle" font-size="9" stroke="none" class="fig-muted" transform="rotate(90 590 130)">replication</text>
+          </g>
+        </svg>`,
+        caption: 'The primary is the bottleneck; you scale around it. PgBouncer funnels 2000 chatty app connections into ~20 real Postgres backends. Reads can go to replicas — with the caveat that replication lag makes read-your-writes unreliable there.',
+      },
       intro: "Databases don’t scale by scaling the database process — they scale by <em>scaling around it</em>: read replicas for read load, connection pools to keep the number of open connections sane, proxies (ProxySQL, PgBouncer, RDS Proxy) that sit between your app and the database managing both, sharding when a single primary really can’t take the write load.\nAlongside that operational side is <em>schema migrations</em>: how you change the shape of a running database without downtime, and how you keep the code and the schema in lockstep across environments. And underlying it all: transactions and isolation levels — the guarantees that let you reason about concurrent writes at all.",
       concepts: [
         ['SQL vs NoSQL — pick by shape', "<em>SQL</em> (Postgres, MySQL): strong schema, joins, ACID transactions. Default choice for most business data. <em>Document</em> (MongoDB, DynamoDB, Firestore): schema-less, single-document atomicity, huge horizontal scale. <em>Key-value</em> (Redis, Memcached): the fastest thing there is at what it does. <em>Time-series</em> (InfluxDB, TimescaleDB): metrics, IoT. <em>Graph</em> (Neo4j): relationships as first-class."],
@@ -1727,6 +2354,50 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '23',
       title: 'WAF & Application Security',
       tag: 'A firewall for HTTP, and the OWASP top-10 it exists to blunt — WAF, CSP, rate limiting, bot defence, secure headers.',
+      figure: {
+        tag: 'Figure 1 · Request path with the WAF in front',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 240" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="90" width="90" height="60"/>
+            <text x="65" y="112" text-anchor="middle" font-size="10" font-weight="700" stroke="none">client</text>
+            <text x="65" y="128" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">any origin</text>
+          </g>
+          <path d="M 110 120 L 138 120" stroke="currentColor"/><polygon points="138,120 133,117 133,123" fill="currentColor"/>
+
+          <g>
+            <rect x="140" y="60" width="180" height="120" stroke="var(--accent)"/>
+            <text x="230" y="82" text-anchor="middle" font-size="12" font-weight="700" stroke="none" fill="var(--accent)">WAF</text>
+            <line x1="160" y1="92" x2="300" y2="92" stroke-dasharray="2 3" opacity="0.4"/>
+            <text x="230" y="112" text-anchor="middle" font-size="10" stroke="none">OWASP CRS rules</text>
+            <text x="230" y="128" text-anchor="middle" font-size="10" stroke="none">SQLi · XSS · SSRF</text>
+            <text x="230" y="144" text-anchor="middle" font-size="10" stroke="none">rate limit / bot</text>
+            <text x="230" y="164" text-anchor="middle" font-size="9" stroke="none" class="fig-em">block · challenge · allow</text>
+          </g>
+
+          <path d="M 320 120 L 358 120" stroke="currentColor"/><polygon points="358,120 353,117 353,123" fill="currentColor"/>
+          <text x="339" y="112" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">allowed</text>
+
+          <g>
+            <rect x="360" y="90" width="120" height="60"/>
+            <text x="420" y="112" text-anchor="middle" font-size="10" font-weight="700" stroke="none">reverse proxy</text>
+            <text x="420" y="128" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">TLS · route</text>
+          </g>
+
+          <path d="M 480 120 L 518 120" stroke="currentColor"/><polygon points="518,120 513,117 513,123" fill="currentColor"/>
+
+          <g>
+            <rect x="520" y="90" width="80" height="60"/>
+            <text x="560" y="112" text-anchor="middle" font-size="10" font-weight="700" stroke="none">app</text>
+            <text x="560" y="128" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">business logic</text>
+          </g>
+
+          <g stroke="var(--accent)" fill="var(--accent)" stroke-width="1.5">
+            <path d="M 230 180 L 230 210" stroke-dasharray="3 3"/>
+            <text x="230" y="222" text-anchor="middle" font-size="10" stroke="none" font-weight="700">blocked · 403 · logged to SIEM</text>
+          </g>
+        </svg>`,
+        caption: 'The WAF is a Layer-7 filter that sees every request before your app does. It matches against a ruleset (OWASP CRS + custom), blocks SQL-injection, XSS, path traversal, rate-limits abusive clients, and logs everything a SIEM might want. Not a substitute for safe code — a durable second layer.',
+      },
       intro: "A Web Application Firewall inspects HTTP traffic before it reaches your app, dropping requests that look like classic attacks — SQL injection, XSS, command injection, path traversal, log4shell — and rate-limiting abusive clients. It’s Layer-7 protection, matched to the OWASP Top 10 by design.\nA WAF is <em>not</em> a substitute for writing safe code (parameterised queries, output encoding, CSRF tokens, secure cookies, dependency auditing). It’s a durable second layer that catches what your code missed and buys you time to patch. The dominant options are Cloudflare WAF, AWS WAF, GCP Cloud Armor, Azure Front Door WAF, and open-source ModSecurity with the OWASP Core Rule Set.",
       concepts: [
         ['WAF', "A firewall that understands HTTP — inspects method, path, headers, cookies, and body against rulesets, blocking or challenging suspicious traffic. Managed rule groups (AWS Managed Rules, Cloudflare Managed Ruleset, OWASP CRS) give you a strong baseline; add custom rules for your app-specific patterns."],
@@ -1784,6 +2455,63 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '24',
       title: 'APIs, SDKs & Real-time',
       tag: 'HTTP semantics, SDKs, auth, versioning, OpenAPI — plus SSE, WebSocket, and gRPC for the moments HTTP request-response isn’t enough.',
+      figure: {
+        tag: 'Figure 1 · When to pick which transport',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="30" width="140" height="200"/>
+            <text x="90" y="52" text-anchor="middle" font-size="11" font-weight="700" stroke="none">REST / JSON</text>
+            <line x1="30" y1="62" x2="150" y2="62" opacity="0.4"/>
+            <text x="90" y="82" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">request → response</text>
+            <text x="90" y="98" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">cacheable</text>
+            <text x="90" y="114" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">stateless</text>
+            <text x="90" y="150" text-anchor="middle" font-size="9" stroke="none" class="fig-em" font-weight="700">DEFAULT</text>
+            <text x="90" y="180" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">CRUD</text>
+            <text x="90" y="196" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">integrations</text>
+            <text x="90" y="212" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">public APIs</text>
+          </g>
+
+          <g>
+            <rect x="180" y="30" width="140" height="200"/>
+            <text x="250" y="52" text-anchor="middle" font-size="11" font-weight="700" stroke="none">SSE</text>
+            <line x1="190" y1="62" x2="310" y2="62" opacity="0.4"/>
+            <text x="250" y="82" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">server → client</text>
+            <text x="250" y="98" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">one-way stream</text>
+            <text x="250" y="114" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">auto-reconnect</text>
+            <text x="250" y="150" text-anchor="middle" font-size="9" stroke="none" class="fig-em" font-weight="700">STREAM DOWN</text>
+            <text x="250" y="180" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">LLM tokens</text>
+            <text x="250" y="196" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">notifications</text>
+            <text x="250" y="212" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">live dashboards</text>
+          </g>
+
+          <g>
+            <rect x="340" y="30" width="140" height="200" stroke="var(--accent)"/>
+            <text x="410" y="52" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">WebSocket</text>
+            <line x1="350" y1="62" x2="470" y2="62" opacity="0.4"/>
+            <text x="410" y="82" text-anchor="middle" font-size="9" stroke="none" class="fig-em">both directions</text>
+            <text x="410" y="98" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">persistent</text>
+            <text x="410" y="114" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">stateful</text>
+            <text x="410" y="150" text-anchor="middle" font-size="9" stroke="none" class="fig-em" font-weight="700">FULL DUPLEX</text>
+            <text x="410" y="180" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">chat</text>
+            <text x="410" y="196" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">collab editors</text>
+            <text x="410" y="212" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">multiplayer</text>
+          </g>
+
+          <g>
+            <rect x="500" y="30" width="100" height="200"/>
+            <text x="550" y="52" text-anchor="middle" font-size="11" font-weight="700" stroke="none">gRPC</text>
+            <line x1="510" y1="62" x2="590" y2="62" opacity="0.4"/>
+            <text x="550" y="82" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">HTTP/2</text>
+            <text x="550" y="98" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">protobuf</text>
+            <text x="550" y="114" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">typed</text>
+            <text x="550" y="150" text-anchor="middle" font-size="9" stroke="none" class="fig-em" font-weight="700">INTERNAL</text>
+            <text x="550" y="180" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">service-to-</text>
+            <text x="550" y="194" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">service, high</text>
+            <text x="550" y="208" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">throughput</text>
+          </g>
+        </svg>`,
+        caption: 'Pick the boring option by default. REST covers most needs. Reach for SSE when the server has updates to push; WebSocket when the client also pushes back frequently; gRPC when the boundary is internal and speed / typing matter more than reach.',
+      },
       intro: "Almost everything modern software does across a network is an API call. Understanding HTTP semantics, the difference between an SDK and the raw API, and knowing when to reach for WebSocket vs Server-Sent Events vs plain polling will save you from a lot of avoidable pain. A well-designed API is <em>boring and predictable</em> — that is the compliment.\nBeyond REST there are alternatives with sharp trade-offs: <em>GraphQL</em> for client-shaped queries against a schema, <em>gRPC</em> for high-performance internal service-to-service, <em>SSE</em> and <em>WebSocket</em> for real-time. Pick the boring choice by default; reach for the alternatives when there’s a specific reason.",
       concepts: [
         ['REST', "An architectural style for HTTP APIs — resources at URLs, verbs by HTTP method, state in the response body. Not a spec, a set of conventions. Predictable, cacheable, tool-friendly. The default choice for public APIs and most internal ones."],
@@ -1843,6 +2571,55 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '30',
       title: 'MCP — Model Context Protocol',
       tag: 'A standard for giving LLM agents tools, resources, and prompts — the LSP moment for AI tool-use.',
+      figure: {
+        tag: 'Figure 1 · Client, protocol, servers',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="80" width="160" height="100" stroke="var(--accent)"/>
+            <text x="100" y="104" text-anchor="middle" font-size="12" font-weight="700" stroke="none" fill="var(--accent)">MCP client</text>
+            <text x="100" y="122" text-anchor="middle" font-size="9" stroke="none" class="fig-em">Claude Desktop</text>
+            <text x="100" y="136" text-anchor="middle" font-size="9" stroke="none" class="fig-em">Claude Code · Cursor</text>
+            <line x1="30" y1="146" x2="170" y2="146" opacity="0.4"/>
+            <text x="100" y="164" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">discovers tools</text>
+            <text x="100" y="176" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">surfaces to the model</text>
+          </g>
+
+          <g fill="currentColor">
+            <path d="M 180 130 L 218 130" stroke="currentColor"/><polygon points="218,130 213,127 213,133"/>
+          </g>
+          <text x="199" y="122" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">JSON-RPC</text>
+          <text x="199" y="152" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">stdio · HTTP</text>
+
+          <g>
+            <rect x="220" y="30" width="180" height="52"/>
+            <text x="310" y="52" text-anchor="middle" font-size="10" font-weight="700" stroke="none">MCP server: github</text>
+            <text x="310" y="68" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">list_prs · open_issue · comment</text>
+
+            <rect x="220" y="100" width="180" height="52"/>
+            <text x="310" y="122" text-anchor="middle" font-size="10" font-weight="700" stroke="none">MCP server: postgres</text>
+            <text x="310" y="138" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">describe_table · run_query</text>
+
+            <rect x="220" y="170" width="180" height="52"/>
+            <text x="310" y="192" text-anchor="middle" font-size="10" font-weight="700" stroke="none">MCP server: your app</text>
+            <text x="310" y="208" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">domain tools · resources · prompts</text>
+          </g>
+
+          <g fill="currentColor">
+            <path d="M 400 56 L 438 90" stroke="currentColor"/><polygon points="438,90 431,88 435,82"/>
+            <path d="M 400 126 L 438 126" stroke="currentColor"/><polygon points="438,126 433,123 433,129"/>
+            <path d="M 400 196 L 438 172" stroke="currentColor"/><polygon points="438,172 431,174 434,168"/>
+          </g>
+
+          <g>
+            <rect x="440" y="80" width="160" height="100"/>
+            <text x="520" y="104" text-anchor="middle" font-size="12" font-weight="700" stroke="none">the model</text>
+            <text x="520" y="122" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">"call postgres.describe_table"</text>
+            <text x="520" y="138" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">"call github.open_issue"</text>
+            <text x="520" y="160" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">picks tools by name</text>
+          </g>
+        </svg>`,
+        caption: 'The client speaks JSON-RPC to any number of servers over stdio or streamable HTTP. Each server declares tools, resources, and prompts; the client surfaces them to the model. Implement one server for your service — every MCP-aware client can use it. LSP for LLM tools.',
+      },
       intro: "The <em>Model Context Protocol</em> (MCP) is an open standard, driven originally by Anthropic and now supported broadly, for connecting LLM applications to external tools and data. It defines a client-server protocol: an MCP <em>server</em> exposes tools (things the model can invoke), resources (things the model can read), and prompts (reusable prompt templates), and an MCP <em>client</em> (Claude Desktop, Claude Code, Cursor, Zed, plus a growing list of IDEs and agent frameworks) discovers and uses them.\nBefore MCP, every agent-tool integration was one-off. MCP does for LLM tool-use what LSP did for editor language support: implement the server once, every client benefits. If you build backend systems that AI agents might interact with — CI, ticketing, databases, monitoring, internal APIs — MCP is where that surface lives now.",
       concepts: [
         ['MCP', "The <em>Model Context Protocol</em> — an open spec for exposing tools, resources, and prompts to LLM clients over a standard interface. Transports: <em>stdio</em> (client launches server as a subprocess and speaks over pipes) or <em>streamable HTTP</em> (server runs as a web service, uses SSE for streaming)."],
@@ -1901,6 +2678,51 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '14',
       title: 'Service Mesh',
       tag: 'A dedicated layer for service-to-service concerns — mTLS, retries, canaries, telemetry — moved out of your app.',
+      figure: {
+        tag: 'Figure 1 · The sidecar pattern',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="40" y="80" width="220" height="120" stroke-dasharray="3 4"/>
+            <text x="150" y="70" text-anchor="middle" font-size="10" font-weight="700" stroke="none" class="fig-muted">Pod A</text>
+            <rect x="60" y="100" width="80" height="80"/>
+            <text x="100" y="130" text-anchor="middle" font-size="11" font-weight="700" stroke="none">app</text>
+            <text x="100" y="148" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">business logic</text>
+            <text x="100" y="164" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">plain HTTP</text>
+
+            <rect x="160" y="100" width="80" height="80" stroke="var(--accent)"/>
+            <text x="200" y="130" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">sidecar</text>
+            <text x="200" y="148" text-anchor="middle" font-size="9" stroke="none" class="fig-em">Envoy</text>
+            <text x="200" y="164" text-anchor="middle" font-size="9" stroke="none" class="fig-em">mTLS, retry, trace</text>
+
+            <line x1="140" y1="140" x2="160" y2="140" stroke="currentColor"/>
+          </g>
+
+          <g>
+            <rect x="360" y="80" width="220" height="120" stroke-dasharray="3 4"/>
+            <text x="470" y="70" text-anchor="middle" font-size="10" font-weight="700" stroke="none" class="fig-muted">Pod B</text>
+            <rect x="380" y="100" width="80" height="80" stroke="var(--accent)"/>
+            <text x="420" y="130" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">sidecar</text>
+            <text x="420" y="148" text-anchor="middle" font-size="9" stroke="none" class="fig-em">Envoy</text>
+            <text x="420" y="164" text-anchor="middle" font-size="9" stroke="none" class="fig-em">mTLS, retry, trace</text>
+
+            <rect x="480" y="100" width="80" height="80"/>
+            <text x="520" y="130" text-anchor="middle" font-size="11" font-weight="700" stroke="none">app</text>
+            <text x="520" y="148" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">business logic</text>
+            <text x="520" y="164" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">plain HTTP</text>
+
+            <line x1="460" y1="140" x2="480" y2="140" stroke="currentColor"/>
+          </g>
+
+          <g stroke="var(--accent)" stroke-width="2" fill="none">
+            <path d="M 240 140 L 380 140"/>
+            <text x="310" y="132" text-anchor="middle" font-size="10" stroke="none" fill="var(--accent)" font-weight="700">mTLS · retry · timeout</text>
+            <text x="310" y="156" text-anchor="middle" font-size="9" stroke="none" fill="var(--accent)">controlled by mesh CRDs, not app code</text>
+          </g>
+
+          <text x="40" y="230" font-size="10" stroke="none" class="fig-muted">The apps talk to localhost. Everything else is the sidecar's job.</text>
+        </svg>`,
+        caption: 'A sidecar proxy is deployed in every Pod, sharing the network namespace with the app. The app calls localhost; the proxy handles the real network hop — encrypted, retried, timed out, traced. All cross-cutting concerns move out of code and into declarative mesh policy.',
+      },
       intro: "A service mesh is infrastructure that handles the cross-cutting concerns every service in a distributed system has to solve: mutual TLS between services, retries, timeouts, circuit breaking, load balancing, traffic splitting for canaries, and per-request telemetry. It does this by injecting a proxy (a <em>sidecar</em>) beside each application pod, transparently intercepting all traffic in and out. Your application code stays boring — no retry logic, no cert rotation, no distributed-tracing plumbing — and every service in the cluster gets the same treatment.\nIstio and Linkerd are the mainstream implementations on Kubernetes; Consul is another. Cilium (an eBPF-based CNI) is increasingly used as a mesh replacement, doing the same job in the kernel without sidecars. You don’t need a mesh on day one — you probably need one when hand-rolled retries, per-service TLS, and cross-service telemetry start feeling like a full-time job.",
       concepts: [
         ['Sidecar pattern', "A helper container running alongside your application container in the same Pod, sharing its network namespace. In a mesh, the sidecar is the mesh <em>data-plane proxy</em> (almost always <em>Envoy</em>) that transparently intercepts all in/out traffic via iptables rewriting."],
@@ -1957,6 +2779,53 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '20',
       title: 'Message Queues & Event Streaming',
       tag: 'Loose-coupling services — buffer the spikes, absorb failures, unlock async work — queues, topics, streams, deliveries, offsets.',
+      figure: {
+        tag: 'Figure 1 · Producer · Broker · Consumers',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 240" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="100" width="120" height="50"/>
+            <text x="80" y="122" text-anchor="middle" font-size="11" font-weight="700" stroke="none">producer</text>
+            <text x="80" y="138" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">orders svc</text>
+          </g>
+          <path d="M 140 125 L 178 125" stroke="currentColor"/><polygon points="178,125 173,122 173,128" fill="currentColor"/>
+          <text x="160" y="115" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">publish</text>
+
+          <g>
+            <rect x="180" y="60" width="200" height="140" stroke="var(--accent)"/>
+            <text x="280" y="82" text-anchor="middle" font-size="12" font-weight="700" stroke="none" fill="var(--accent)">broker</text>
+            <text x="280" y="98" text-anchor="middle" font-size="9" stroke="none" class="fig-em">Kafka / RabbitMQ / SQS</text>
+            <g>
+              <rect x="200" y="110" width="160" height="18"/>
+              <rect x="200" y="130" width="160" height="18"/>
+              <rect x="200" y="150" width="160" height="18"/>
+              <rect x="200" y="170" width="160" height="18"/>
+              <text x="210" y="123" font-size="9" stroke="none" class="fig-muted">msg 4 · newest</text>
+              <text x="210" y="143" font-size="9" stroke="none" class="fig-muted">msg 3</text>
+              <text x="210" y="163" font-size="9" stroke="none" class="fig-muted">msg 2</text>
+              <text x="210" y="183" font-size="9" stroke="none" class="fig-muted">msg 1 · oldest</text>
+            </g>
+          </g>
+
+          <path d="M 380 100 L 418 60" stroke="currentColor"/><polygon points="418,60 410,60 414,66" fill="currentColor"/>
+          <path d="M 380 130 L 418 130" stroke="currentColor"/><polygon points="418,130 413,127 413,133" fill="currentColor"/>
+          <path d="M 380 160 L 418 200" stroke="currentColor"/><polygon points="418,200 410,200 414,194" fill="currentColor"/>
+
+          <g>
+            <rect x="420" y="35" width="180" height="50"/>
+            <text x="510" y="57" text-anchor="middle" font-size="10" font-weight="700" stroke="none">consumer A</text>
+            <text x="510" y="73" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">bill: fulfil</text>
+
+            <rect x="420" y="105" width="180" height="50"/>
+            <text x="510" y="127" text-anchor="middle" font-size="10" font-weight="700" stroke="none">consumer B</text>
+            <text x="510" y="143" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">warehouse: pack</text>
+
+            <rect x="420" y="175" width="180" height="50"/>
+            <text x="510" y="197" text-anchor="middle" font-size="10" font-weight="700" stroke="none">consumer C</text>
+            <text x="510" y="213" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">analytics: log</text>
+          </g>
+        </svg>`,
+        caption: 'The producer publishes, the broker holds, the consumers pull independently. Producer never knows who reads. Consumers can be added, restarted, catch up — the broker buffers what they miss. That decoupling is what queues sell.',
+      },
       intro: "Once your system has more than one service, sooner or later you need one to hand work to another <em>without blocking</em> on it. A message queue or event stream sits between them: the producer publishes; the broker durably stores; the consumer pulls when ready. Slow consumer? The queue absorbs the difference. Consumer crashed? The queue keeps the messages until it comes back. Fan out to five consumers? They can all read the same events.\nThe two family lines: <em>queues</em> (RabbitMQ, Redis Streams, SQS, ActiveMQ) for task/job work with per-message delivery; <em>event streams</em> (Kafka, Redpanda, Pulsar, Kinesis) as durable logs replayable by many consumers. Cloud managed: SQS (AWS), Pub/Sub (GCP), Service Bus + Event Hubs (Azure), MSK/Confluent Cloud (managed Kafka).",
       concepts: [
         ['Producer / Consumer / Broker', "The three roles. <em>Producer</em> publishes; <em>Broker</em> durably stores and routes; <em>Consumer</em> reads. Neither producer nor consumer knows how many of the other exist. Add more consumers to scale processing (up to the partition/queue limit)."],
@@ -2014,6 +2883,42 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '21',
       title: 'Caching & CDNs',
       tag: 'Serving the same answer twice is expensive — cache it once, close to the user; the hard part is invalidating it.',
+      figure: {
+        tag: 'Figure 1 · Cache hierarchy — five chances to skip work',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 220" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20"  y="80" width="90" height="60"/>
+            <text x="65" y="102" text-anchor="middle" font-size="11" font-weight="700" stroke="none">browser</text>
+            <text x="65" y="118" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">disk + memory</text>
+
+            <rect x="140" y="80" width="90" height="60"/>
+            <text x="185" y="102" text-anchor="middle" font-size="11" font-weight="700" stroke="none">CDN edge</text>
+            <text x="185" y="118" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">Cloudflare · Fastly</text>
+
+            <rect x="260" y="80" width="90" height="60"/>
+            <text x="305" y="102" text-anchor="middle" font-size="11" font-weight="700" stroke="none">reverse</text>
+            <text x="305" y="116" text-anchor="middle" font-size="11" font-weight="700" stroke="none">proxy</text>
+            <text x="305" y="132" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">nginx · varnish</text>
+
+            <rect x="380" y="80" width="90" height="60"/>
+            <text x="425" y="102" text-anchor="middle" font-size="11" font-weight="700" stroke="none">app cache</text>
+            <text x="425" y="118" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">Redis · Memcached</text>
+
+            <rect x="500" y="80" width="100" height="60" stroke="var(--accent)"/>
+            <text x="550" y="102" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">database</text>
+            <text x="550" y="118" text-anchor="middle" font-size="9" stroke="none" class="fig-em">last resort</text>
+          </g>
+          <g fill="currentColor">
+            <path d="M 110 110 L 138 110" stroke="currentColor"/><polygon points="138,110 133,107 133,113"/>
+            <path d="M 230 110 L 258 110" stroke="currentColor"/><polygon points="258,110 253,107 253,113"/>
+            <path d="M 350 110 L 378 110" stroke="currentColor"/><polygon points="378,110 373,107 373,113"/>
+            <path d="M 470 110 L 498 110" stroke="currentColor"/><polygon points="498,110 493,107 493,113"/>
+          </g>
+          <text x="20" y="180" font-size="9" stroke="none" class="fig-muted">each layer catches a wider audience with a longer invalidation cycle</text>
+          <text x="20" y="196" font-size="9" stroke="none" class="fig-muted">"Cache-Control: public, max-age=60, s-maxage=300, stale-while-revalidate=30"</text>
+        </svg>`,
+        caption: 'The request tries every layer left-to-right; the first hit wins. Browser is a cache of one; CDN is a cache of millions; app cache is a cache of your fleet. The hard part isn\'t populating them — it\'s telling all of them, correctly, when the answer has changed.',
+      },
       intro: "Almost every performance problem in a mature system is solvable with the right cache in the right place. HTTP caching at the browser, edge caching at the CDN, application caching in Redis or Memcached, query caching in the database — each layer catches a different kind of repeat work, at a different cost, with a different invalidation cycle.\nThe hard part of caching isn’t writing to the cache. It’s <em>invalidating</em> it — knowing when the cached answer is stale, and telling every layer that holds a copy. The Phil Karlton joke: there are two hard things in CS — cache invalidation, and naming things. This chapter covers the practical patterns for both sides: caching what should be cached, and blowing it away cleanly when it’s wrong.",
       concepts: [
         ['Cache hierarchy', "Browser → CDN edge → reverse-proxy cache → application cache (Redis/Memcached) → database (query planner cache, buffer pool). Each layer catches a wider audience but has a longer invalidation cycle. Cache <em>as high as you can</em> get away with — CDN reaches millions with one hit."],
@@ -2071,6 +2976,44 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '22',
       title: 'Secrets Management',
       tag: 'Where API keys, DB passwords, and certificates actually belong — encrypted, audited, rotated, delivered at run time.',
+      figure: {
+        tag: 'Figure 1 · Dynamic secrets — no static credential exists',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="100" width="130" height="60"/>
+            <text x="85" y="122" text-anchor="middle" font-size="11" font-weight="700" stroke="none">app pod</text>
+            <text x="85" y="138" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">SA · k8s auth</text>
+          </g>
+          <path d="M 150 130 L 188 130" stroke="currentColor"/><polygon points="188,130 183,127 183,133" fill="currentColor"/>
+          <text x="169" y="118" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">login</text>
+
+          <g>
+            <rect x="190" y="60" width="180" height="140" stroke="var(--accent)"/>
+            <text x="280" y="82" text-anchor="middle" font-size="12" font-weight="700" stroke="none" fill="var(--accent)">Vault</text>
+            <text x="280" y="98" text-anchor="middle" font-size="9" stroke="none" class="fig-em">policy: db-readonly</text>
+            <line x1="210" y1="110" x2="350" y2="110" stroke-dasharray="2 3" opacity="0.4"/>
+            <text x="280" y="130" text-anchor="middle" font-size="10" stroke="none">1. verify SA token</text>
+            <text x="280" y="146" text-anchor="middle" font-size="10" stroke="none">2. create fresh DB user</text>
+            <text x="280" y="162" text-anchor="middle" font-size="10" stroke="none">3. return creds + lease</text>
+            <text x="280" y="184" text-anchor="middle" font-size="10" stroke="none">4. revoke on expiry</text>
+          </g>
+
+          <path d="M 370 100 L 408 60" stroke="currentColor"/><polygon points="408,60 400,60 404,66" fill="currentColor"/>
+          <text x="390" y="52" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">CREATE USER v-app-abc123 …</text>
+
+          <g>
+            <rect x="410" y="30" width="180" height="60"/>
+            <text x="500" y="52" text-anchor="middle" font-size="11" font-weight="700" stroke="none">Postgres</text>
+            <text x="500" y="68" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">short-lived user</text>
+          </g>
+
+          <path d="M 370 160 L 408 200" stroke="currentColor" stroke-dasharray="3 3" opacity="0.6"/>
+          <text x="390" y="192" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">DROP USER at lease end</text>
+
+          <text x="20" y="222" font-size="9" font-weight="700" letter-spacing="0.14em" stroke="none" class="fig-muted">NO STATIC DB PASSWORD EXISTS ANYWHERE — LEASE-BOUND, PER-CALLER, AUDITED</text>
+        </svg>`,
+        caption: 'Vault mints a fresh DB user for each app pod on demand, hands over its lease, and revokes the user when the lease expires. Nothing static to leak, nothing long-lived to rotate — a compromised credential dies on its own within the hour.',
+      },
       intro: "Secrets — API tokens, database passwords, TLS keys, cloud credentials, JWT signing keys — never belong in git, in Docker images, in <code>.env</code> files checked into repos, or in plaintext on shared filesystems. A proper secrets manager stores them encrypted at rest, gates access with fine-grained policies, audits every read, and rotates them on a schedule.\nThe canonical open-source choice is <em>HashiCorp Vault</em>. Every major cloud has an equivalent: AWS Secrets Manager, GCP Secret Manager, Azure Key Vault. For GitOps flows where you want the ciphertext committed to git, <em>Sealed Secrets</em> and <em>SOPS</em> are the tools. For Kubernetes specifically, <em>External Secrets Operator</em> and <em>CSI Secret Driver</em> pull secrets from external stores at pod-start.",
       concepts: [
         ['Secrets manager', "A service that stores secrets encrypted at rest, authenticates and authorises callers, audits every access, and (usually) rotates them. Vault, AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, Bitwarden Secrets Manager, Doppler, Infisical."],
@@ -2128,6 +3071,57 @@ container_memory_working_set_bytes / container_spec_memory_limit_bytes`,
       num: '09',
       title: 'Bastion & Jump Access',
       tag: 'How operators actually reach private infrastructure — from classic SSH bastions to modern zero-trust jump access.',
+      figure: {
+        tag: 'Figure 1 · Classic bastion vs zero-trust SSM',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 280" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <!-- Divider -->
+          <line x1="310" y1="20" x2="310" y2="270" stroke-dasharray="4 4" opacity="0.5"/>
+          <text x="150" y="38" text-anchor="middle" font-size="10" font-weight="700" stroke="none" class="fig-muted">CLASSIC BASTION</text>
+          <text x="470" y="38" text-anchor="middle" font-size="10" font-weight="700" stroke="none" class="fig-em">IAM-AUTH TUNNEL (SSM / IAP)</text>
+
+          <!-- LEFT: Bastion -->
+          <g>
+            <rect x="30" y="60" width="70" height="34"/>
+            <text x="65" y="82" text-anchor="middle" font-size="10" stroke="none">laptop</text>
+            <rect x="130" y="60" width="80" height="34"/>
+            <text x="170" y="82" text-anchor="middle" font-size="10" font-weight="700" stroke="none">bastion</text>
+            <text x="170" y="107" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">:22 exposed</text>
+            <rect x="240" y="60" width="60" height="34"/>
+            <text x="270" y="82" text-anchor="middle" font-size="10" stroke="none">target</text>
+
+            <path d="M 100 77 L 128 77" stroke="currentColor"/><polygon points="128,77 122,74 122,80" fill="currentColor"/>
+            <path d="M 210 77 L 238 77" stroke="currentColor"/><polygon points="238,77 232,74 232,80" fill="currentColor"/>
+
+            <!-- Costs -->
+            <text x="170" y="150" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">host to patch</text>
+            <text x="170" y="164" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">keys on it forever</text>
+            <text x="170" y="178" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">port 22 to internet</text>
+            <text x="170" y="192" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">audit is a shell log</text>
+          </g>
+
+          <!-- RIGHT: SSM -->
+          <g>
+            <rect x="340" y="60" width="70" height="34"/>
+            <text x="375" y="82" text-anchor="middle" font-size="10" stroke="none">laptop</text>
+            <rect x="440" y="60" width="80" height="34" stroke="var(--accent)"/>
+            <text x="480" y="82" text-anchor="middle" font-size="10" font-weight="700" stroke="none" fill="var(--accent)">SSM API</text>
+            <text x="480" y="107" text-anchor="middle" font-size="9" stroke="none" class="fig-em">IAM authz</text>
+            <rect x="550" y="60" width="60" height="34"/>
+            <text x="580" y="82" text-anchor="middle" font-size="10" stroke="none">target</text>
+            <text x="580" y="107" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">no :22 open</text>
+
+            <path d="M 410 77 L 438 77" stroke="currentColor"/><polygon points="438,77 432,74 432,80" fill="currentColor"/>
+            <path d="M 520 77 L 548 77" stroke="var(--accent)"/><polygon points="548,77 542,74 542,80" fill="var(--accent)"/>
+
+            <!-- Wins -->
+            <text x="480" y="150" text-anchor="middle" font-size="9" stroke="none" class="fig-em">no host to patch</text>
+            <text x="480" y="164" text-anchor="middle" font-size="9" stroke="none" class="fig-em">no persistent keys</text>
+            <text x="480" y="178" text-anchor="middle" font-size="9" stroke="none" class="fig-em">no inbound port</text>
+            <text x="480" y="192" text-anchor="middle" font-size="9" stroke="none" class="fig-em">every session logged</text>
+          </g>
+        </svg>`,
+        caption: 'Same access, two designs. On the left, the classic bastion has a public port 22 and an audit story that\'s "read the shell history." On the right, SSM / IAP / Tailscale open no port — the SDK authenticates to a control-plane API, which then opens a tunnel to the target that logs every keystroke.',
+      },
       intro: "You can’t SSH to a database in a private subnet from your laptop — that’s the whole point of “private.” So how do operators reach private infrastructure at 2am? Historically: a <em>bastion host</em> — a single hardened server in a public subnet, the only inbound entry point, from which you jump to everything else. Modern setups replace the bastion with identity-aware managed services: AWS SSM Session Manager, GCP IAP, Azure Bastion, Tailscale, Teleport.\nThe shift is from “network position implies trust” to “every session is authenticated, authorised, and audited by identity, regardless of network position.” Zero-trust access is the direction of travel — no open port 22 on the internet, no shared SSH keys, no “oh they still had access after leaving.”",
       concepts: [
         ['Bastion host (classic)', "A single hardened server in a public subnet, the only host with an inbound port open from the internet. Operators SSH to the bastion, then SSH from there to private targets. Small attack surface (one server), one place to audit, one place to patch."],
@@ -2186,6 +3180,57 @@ $ ssh admin@db-1                                    <span class="c"># works from
       num: '25',
       title: 'Design Patterns',
       tag: 'The dozen patterns you keep meeting — resilience, deployment, structural, data — named once so you can recognise them everywhere.',
+      figure: {
+        tag: 'Figure 1 · Retry with backoff + circuit breaker',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 240" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <!-- Timeline axis -->
+          <line x1="30" y1="140" x2="600" y2="140" stroke="currentColor"/>
+          <text x="30" y="158" font-size="9" stroke="none" class="fig-muted">t=0</text>
+          <text x="600" y="158" text-anchor="end" font-size="9" stroke="none" class="fig-muted">→ time</text>
+
+          <!-- Retry attempts as spikes with growing spacing -->
+          <g stroke="currentColor" fill="currentColor">
+            <line x1="60"  y1="140" x2="60"  y2="90"/>
+            <text x="60"  y="82" text-anchor="middle" font-size="9" stroke="none">try 1</text>
+            <text x="60"  y="110" text-anchor="middle" font-size="9" stroke="none" fill="var(--danger)">✕</text>
+          </g>
+          <g stroke="currentColor" fill="currentColor">
+            <line x1="90"  y1="140" x2="90"  y2="90"/>
+            <text x="90"  y="82" text-anchor="middle" font-size="9" stroke="none">try 2</text>
+            <text x="90"  y="110" text-anchor="middle" font-size="9" stroke="none" fill="var(--danger)">✕</text>
+            <text x="75"  y="160" text-anchor="middle" font-size="8" stroke="none" class="fig-muted">100ms</text>
+          </g>
+          <g stroke="currentColor" fill="currentColor">
+            <line x1="150" y1="140" x2="150" y2="90"/>
+            <text x="150" y="82" text-anchor="middle" font-size="9" stroke="none">try 3</text>
+            <text x="150" y="110" text-anchor="middle" font-size="9" stroke="none" fill="var(--danger)">✕</text>
+            <text x="120" y="160" text-anchor="middle" font-size="8" stroke="none" class="fig-muted">±jitter · 200ms</text>
+          </g>
+          <g stroke="currentColor" fill="currentColor">
+            <line x1="250" y1="140" x2="250" y2="90"/>
+            <text x="250" y="82" text-anchor="middle" font-size="9" stroke="none">try 4</text>
+            <text x="250" y="110" text-anchor="middle" font-size="9" stroke="none" fill="var(--danger)">✕</text>
+            <text x="200" y="160" text-anchor="middle" font-size="8" stroke="none" class="fig-muted">±jitter · 400ms</text>
+          </g>
+
+          <!-- Circuit trips -->
+          <g stroke="var(--accent)" fill="none">
+            <rect x="290" y="60" width="290" height="60" stroke-width="1.5"/>
+            <text x="435" y="80" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">circuit OPEN</text>
+            <text x="435" y="98" text-anchor="middle" font-size="9" stroke="none" fill="var(--accent)">fail fast · no calls</text>
+            <text x="435" y="112" text-anchor="middle" font-size="9" stroke="none" fill="var(--accent)">30s cool-off</text>
+          </g>
+          <g stroke="currentColor" fill="currentColor">
+            <line x1="565" y1="140" x2="565" y2="90"/>
+            <text x="565" y="82" text-anchor="middle" font-size="9" stroke="none">probe</text>
+            <text x="565" y="110" text-anchor="middle" font-size="9" stroke="none" fill="var(--success)">✓</text>
+          </g>
+
+          <text x="30" y="200" font-size="10" font-weight="700" stroke="none" class="fig-muted">RETRY  ·  BACKOFF  ·  JITTER  ·  CIRCUIT  ·  PROBE</text>
+          <text x="30" y="220" font-size="9" stroke="none" class="fig-muted">the four moves that turn a fragile RPC caller into a resilient distributed component</text>
+        </svg>`,
+        caption: 'Fail once, retry. Fail twice, retry after 100ms + jitter. Fail again, back off further. After N failures the circuit opens — no calls, fail fast — until a single probe confirms the downstream has recovered. Jitter is critical: without it, every client retries in unison and turns a bad moment into an outage.',
+      },
       intro: "Every mature distributed system converges on the same handful of patterns for the same handful of problems: retries when the network flakes, timeouts so a slow dependency doesn’t drag you under, circuit breakers when a downstream is definitely dead, canaries when a deploy might be. Learning the names lets you recognise them, discuss them, and reach for the right one — instead of re-deriving each one under production pressure.\nThe patterns below split into four families: <em>resilience</em> (surviving partial failure), <em>deployment</em> (shipping change safely), <em>structural</em> (how services compose), and <em>data</em> (keeping distributed state consistent). None are silver bullets; all are trade-offs. But they’re the vocabulary of the trade.",
       concepts: [
         ['12-Factor App', "A checklist for cloud-native apps: config in env vars, stateless processes, port binding, disposability, dev/prod parity, treat logs as event streams, run admin tasks as one-off processes. Old but still the baseline sanity check. See <em>12factor.net</em>."],
@@ -2251,6 +3296,36 @@ $ ssh admin@db-1                                    <span class="c"># works from
       num: '27',
       title: 'Logs & Loki',
       tag: 'Discrete events with context — structured logs, correlation IDs, LogQL, and cheap-at-scale storage.',
+      figure: {
+        tag: 'Figure 1 · Loki indexes labels, not the log body',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 240" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <g>
+            <rect x="20" y="30" width="580" height="60"/>
+            <text x="30" y="50" font-size="10" font-weight="700" stroke="none">A log line</text>
+            <text x="30" y="70" font-size="10" font-family="var(--font-mono)" stroke="none" class="fig-muted">{app="api", env="prod", level="error"}  "payment failed" user_id=42 request_id=abc-xyz-123 …</text>
+            <line x1="152" y1="60" x2="288" y2="60" stroke="var(--accent)" stroke-width="0.5" stroke-dasharray="2 2"/>
+            <text x="220" y="82" text-anchor="middle" font-size="9" stroke="none" fill="var(--accent)" font-weight="700">↑ labels (indexed)</text>
+            <line x1="300" y1="60" x2="580" y2="60" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.4"/>
+            <text x="450" y="82" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">↑ body (compressed, scanned on query)</text>
+          </g>
+
+          <g>
+            <rect x="60" y="130" width="180" height="80" stroke="var(--accent)"/>
+            <text x="150" y="152" text-anchor="middle" font-size="11" font-weight="700" stroke="none" fill="var(--accent)">index</text>
+            <text x="150" y="170" text-anchor="middle" font-size="9" stroke="none" class="fig-em">tiny · labels only</text>
+            <text x="150" y="188" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">where are prod api errors?</text>
+
+            <rect x="380" y="130" width="180" height="80"/>
+            <text x="470" y="152" text-anchor="middle" font-size="11" font-weight="700" stroke="none">chunks</text>
+            <text x="470" y="170" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">compressed body</text>
+            <text x="470" y="188" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">in object storage (S3)</text>
+          </g>
+
+          <path d="M 240 170 L 378 170" stroke="currentColor"/><polygon points="378,170 373,167 373,173" fill="currentColor"/>
+          <text x="309" y="162" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">scan only matching chunks</text>
+        </svg>`,
+        caption: 'Loki takes the Prometheus trick and applies it to logs: index only the labels, store the body compressed in cheap object storage. That\'s why it costs a fraction of Elasticsearch at the same volume — you pay for scanning at query time, not for indexing at ingest.',
+      },
       intro: "Logs are the story a system tells about itself, one event at a time. Unlike metrics — which are pre-aggregated numbers — logs preserve the specifics: which user, which request ID, which error, which stack trace. That specificity is expensive at scale, so mature logging is a discipline of <em>structuring</em>, <em>sampling</em>, and <em>routing</em> — not a firehose of unstructured text.\nThe reference open-source stack is <em>Loki</em>, from Grafana Labs — built on the deliberate insight that you don’t need to index every log line, just its labels (like Prometheus). This makes Loki dramatically cheaper than Elastic for log storage. Alternatives: Elasticsearch/OpenSearch (full-text indexed), Datadog Logs, Sumo Logic, Splunk (feature-rich, historically expensive), CloudWatch Logs (AWS-native).",
       concepts: [
         ['Structured logging', "Every log line is a JSON object with typed fields: <code>{\"level\":\"error\",\"msg\":\"payment failed\",\"user_id\":42,\"request_id\":\"abc\",\"amount\":19.99}</code>. Every field becomes queryable. Free-text logs are grep material; structured logs are data."],
@@ -2327,6 +3402,43 @@ sum by (service) (
       num: '28',
       title: 'Traces & OpenTelemetry',
       tag: 'Follow one request across every service it touches — spans, context propagation, sampling, and the vendor-neutral SDK that ties it together.',
+      figure: {
+        tag: 'Figure 1 · A trace is a tree of spans',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <!-- Timeline axis -->
+          <line x1="120" y1="30" x2="600" y2="30" stroke="currentColor" opacity="0.4"/>
+          <text x="120" y="20" font-size="9" stroke="none" class="fig-muted">0ms</text>
+          <text x="600" y="20" text-anchor="end" font-size="9" stroke="none" class="fig-muted">450ms</text>
+
+          <!-- Root span -->
+          <g>
+            <text x="20" y="55" font-size="10" stroke="none">POST /order</text>
+            <rect x="120" y="46" width="440" height="16" fill="var(--accent-quiet)" stroke="var(--accent)"/>
+            <text x="565" y="58" font-size="9" stroke="none" class="fig-muted">440ms</text>
+          </g>
+          <!-- Child spans -->
+          <g>
+            <text x="30" y="85" font-size="10" stroke="none" class="fig-muted">├ validate</text>
+            <rect x="120" y="76" width="60" height="14" fill="currentColor" opacity="0.15" stroke="currentColor"/>
+
+            <text x="30" y="115" font-size="10" stroke="none" class="fig-muted">├ auth check</text>
+            <rect x="180" y="106" width="30" height="14" fill="currentColor" opacity="0.15" stroke="currentColor"/>
+
+            <text x="30" y="145" font-size="10" stroke="none" class="fig-muted">├ DB write</text>
+            <rect x="210" y="136" width="120" height="14" fill="currentColor" opacity="0.15" stroke="currentColor"/>
+
+            <text x="30" y="175" font-size="10" stroke="none" class="fig-muted">├ payment API</text>
+            <rect x="330" y="166" width="200" height="14" fill="var(--danger, currentColor)" opacity="0.35" stroke="var(--danger, currentColor)"/>
+            <text x="540" y="177" font-size="9" stroke="none" fill="var(--danger, currentColor)">slow!</text>
+
+            <text x="30" y="205" font-size="10" stroke="none" class="fig-muted">└ enqueue email</text>
+            <rect x="530" y="196" width="20" height="14" fill="currentColor" opacity="0.15" stroke="currentColor"/>
+          </g>
+
+          <text x="20" y="240" font-size="10" font-weight="700" stroke="none" class="fig-muted">the 200ms payment-API span tells you exactly which downstream is slow</text>
+        </svg>`,
+        caption: 'One request becomes a tree of spans — parent, children, grandchildren — each with a start, a duration, a service. In the timeline, the anomalous span is instantly visible: this request spent 200ms in the payment API, and now you know which downstream to profile.',
+      },
       intro: "A metric tells you <em>something is slow</em>. A log tells you <em>this specific request failed</em>. A trace tells you <em>where inside a 15-service call chain the time actually went</em>. Distributed tracing is what makes debugging modern microservice systems tractable — without it, a P99 latency regression could be any of a hundred services.\nOpenTelemetry (OTel) is the vendor-neutral standard. Language SDKs emit spans in a common format (OTLP); you send OTLP to any backend — Tempo, Jaeger, Honeycomb, Datadog, cloud APMs — and switch backends without touching the app. Learn OTel once; use it forever.",
       concepts: [
         ['Trace, Span, Parent-Child', "A <em>trace</em> is one request’s journey. A <em>span</em> is one unit of work within it — a service, an operation, a duration, some attributes. Spans have parent-child relationships forming a tree. Root span = the entry point (an incoming HTTP request); leaf spans = the deepest calls (a DB query)."],
@@ -2410,6 +3522,75 @@ tracer = trace.get_tracer(<span class="s">"orders"</span>)
       num: '29',
       title: 'Grafana, Alloy & Alerting',
       tag: 'The dashboard, the pipeline, the alert — where all three pillars come together into an operator’s workspace.',
+      figure: {
+        tag: 'Figure 1 · One agent, three signals, one place to look',
+        svg: `<svg class="figure-svg" viewBox="0 0 620 260" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+          <!-- Sources -->
+          <g>
+            <rect x="20" y="30" width="120" height="46"/>
+            <text x="80" y="52" text-anchor="middle" font-size="10" font-weight="700" stroke="none">app pods</text>
+            <text x="80" y="66" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">metrics · logs · traces</text>
+
+            <rect x="20" y="110" width="120" height="46"/>
+            <text x="80" y="132" text-anchor="middle" font-size="10" font-weight="700" stroke="none">nodes</text>
+            <text x="80" y="146" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">host stats · syslog</text>
+
+            <rect x="20" y="190" width="120" height="46"/>
+            <text x="80" y="212" text-anchor="middle" font-size="10" font-weight="700" stroke="none">k8s state</text>
+            <text x="80" y="226" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">events · Pod state</text>
+          </g>
+
+          <g fill="currentColor">
+            <path d="M 140 53 L 178 88" stroke="currentColor"/><polygon points="178,88 171,86 175,80"/>
+            <path d="M 140 133 L 178 133" stroke="currentColor"/><polygon points="178,133 173,130 173,136"/>
+            <path d="M 140 213 L 178 178" stroke="currentColor"/><polygon points="178,178 175,186 171,180"/>
+          </g>
+
+          <!-- Alloy -->
+          <g>
+            <rect x="180" y="80" width="140" height="106" stroke="var(--accent)"/>
+            <text x="250" y="106" text-anchor="middle" font-size="12" font-weight="700" stroke="none" fill="var(--accent)">Alloy</text>
+            <text x="250" y="120" text-anchor="middle" font-size="9" stroke="none" class="fig-em">unified agent</text>
+            <line x1="192" y1="128" x2="308" y2="128" opacity="0.4"/>
+            <text x="250" y="146" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">receive · process</text>
+            <text x="250" y="160" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">tail-sample</text>
+            <text x="250" y="174" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">forward</text>
+          </g>
+
+          <g fill="currentColor">
+            <path d="M 320 105 L 358 60" stroke="currentColor"/><polygon points="358,60 350,60 354,66"/>
+            <path d="M 320 133 L 358 133" stroke="currentColor"/><polygon points="358,133 353,130 353,136"/>
+            <path d="M 320 158 L 358 205" stroke="currentColor"/><polygon points="358,205 351,200 354,204" stroke-linejoin="miter"/>
+          </g>
+
+          <!-- Backends -->
+          <g>
+            <rect x="360" y="35" width="130" height="46"/>
+            <text x="425" y="57" text-anchor="middle" font-size="10" font-weight="700" stroke="none">Mimir</text>
+            <text x="425" y="71" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">metrics · Prom-compat</text>
+
+            <rect x="360" y="110" width="130" height="46"/>
+            <text x="425" y="132" text-anchor="middle" font-size="10" font-weight="700" stroke="none">Loki</text>
+            <text x="425" y="146" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">logs · LogQL</text>
+
+            <rect x="360" y="185" width="130" height="46"/>
+            <text x="425" y="207" text-anchor="middle" font-size="10" font-weight="700" stroke="none">Tempo</text>
+            <text x="425" y="221" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">traces · OTLP</text>
+          </g>
+
+          <path d="M 490 130 L 528 130" stroke="currentColor"/><polygon points="528,130 523,127 523,133" fill="currentColor"/>
+
+          <!-- Grafana -->
+          <g>
+            <rect x="530" y="80" width="80" height="106"/>
+            <text x="570" y="112" text-anchor="middle" font-size="11" font-weight="700" stroke="none">Grafana</text>
+            <text x="570" y="128" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">dashboards</text>
+            <text x="570" y="142" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">alerts</text>
+            <text x="570" y="156" text-anchor="middle" font-size="9" stroke="none" class="fig-muted">exemplars</text>
+          </g>
+        </svg>`,
+        caption: 'One Alloy agent collects metrics, logs, and traces from every source, forwards each to its backend, and Grafana pulls all three into one workspace. Exemplars close the loop — a P99 metric spike carries a link to the exact trace that caused it.',
+      },
       intro: "Grafana is the free, open-source dashboard-and-alerting layer that everyone uses on top of Prometheus, Loki, Tempo, and dozens more data sources. Its power is in stitching signals together: a service’s dashboard shows metrics, log lines from Loki, and traces from Tempo in the same view — a P99 spike is one click away from the exact trace that caused it.\n<em>Alloy</em> is Grafana Labs’ collector — a single unified agent replacing Promtail (for logs), OTel Collector (for traces), and various other shippers. Configure it once and it pushes metrics, logs, and traces from every host and every workload. <em>Grafana Alerting</em> is the unified alert engine — one place to define rules against Prometheus, Loki, or any queryable source, and to route alerts through contact points and notification policies.",
       concepts: [
         ['Grafana dashboards', "Panels arranged on a grid, each panel bound to a query against a data source. Templating variables (<code>$service</code>, <code>$env</code>, <code>$namespace</code>) let one dashboard serve many contexts. Folders, permissions, teams, and orgs handle who sees what."],

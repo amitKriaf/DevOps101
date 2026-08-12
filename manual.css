@@ -258,62 +258,65 @@ button {
 .ctrl-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .ctrl-btn:disabled { opacity: .35; cursor: default; }
 
-/* ---------- Loop hero — DevOps continuous-cycle infinity ---------- */
+/* ---------- Loop hero — DevOps continuous-cycle infinity (two-ring) ---------- */
 
 .loop-hero {
   text-align: center;
-  padding: 12px 0 32px;
+  padding: 12px 0 28px;
   margin-bottom: 20px;
   border-bottom: 1px solid var(--rule-hair);
 }
 .loop-svg {
   width: 100%;
-  max-width: 320px;
+  max-width: 620px;
   height: auto;
   display: inline-block;
   overflow: visible;
 }
-.loop-path {
-  stroke: var(--rule);
-  stroke-width: 1;
-  stroke-linejoin: round;
-  stroke-linecap: round;
+.ring-dev { color: var(--accent); }
+.ring-ops { color: var(--danger); }
+.ring circle {
+  transition: stroke 300ms ease;
 }
-.loop-tick {
-  fill: var(--rule);
-}
-.loop-dot { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 40%, transparent)); }
-.loop-labels {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 6px;
+.stage-label {
   font-family: var(--font-mono);
   font-variation-settings: var(--rec-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  color: var(--ink-3);
-  text-transform: lowercase;
+  font-size: 12.5px;
+  font-weight: 700;
+  fill: var(--ground);
+  letter-spacing: 0.02em;
 }
-.loop-labels .loop-mid { color: var(--accent); font-weight: 700; }
+.loop-word {
+  font-family: var(--font-headline);
+  font-weight: 400;
+  font-size: 62px;
+  letter-spacing: -0.02em;
+  fill: var(--ink);
+}
+.loop-orbit {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 55%, transparent));
+}
 .loop-caption {
-  font-family: var(--font-display);
-  font-variation-settings: "wght" 500, var(--rec-sans);
-  font-size: 10px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 13.5px;
   color: var(--ink-3);
-  margin-top: 12px;
+  margin-top: 14px;
+  max-width: 60ch;
+  margin-left: auto;
+  margin-right: auto;
 }
 @media (prefers-reduced-motion: reduce) {
-  .loop-dot animateMotion { display: none; }
+  .loop-orbit animateMotion { display: none; }
 }
-@media (max-width: 640px) {
-  .loop-hero { padding: 8px 0 22px; margin-bottom: 16px; }
-  .loop-svg { max-width: 240px; }
-  .loop-labels { gap: 10px; font-size: 9.5px; }
-  .loop-caption { font-size: 9.5px; letter-spacing: 0.22em; }
+@media (max-width: 700px) {
+  .loop-svg { max-width: 100%; }
+  .loop-word { font-size: 52px; }
+  .stage-label { font-size: 11.5px; }
+}
+@media (max-width: 480px) {
+  .loop-hero { padding: 6px 0 20px; }
+  .loop-caption { font-size: 12.5px; }
 }
 
 /* ---------- Plate — today's procedure + operator status ---------- */
@@ -972,26 +975,35 @@ button {
 }
 
 /* Code block — a real runbook example.
-   Breaks out of the reading column so wide code doesn't clip. */
+   Breaks out of the reading column so wide code doesn't clip.
+   Visible scrollbar so overflow is discoverable. */
 .code-block {
   background: var(--surface);
   color: var(--ink);
-  padding: 22px 24px 22px 24px;
+  padding: 22px 20px 18px 20px;
   font-family: var(--font-mono);
   font-variation-settings: var(--rec-mono);
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.55;
   border: 1px solid var(--rule);
   overflow-x: auto;
+  overflow-y: hidden;
   white-space: pre;
   tab-size: 2;
-  margin: 0 -70px 8px -70px;
+  margin: 0 -70px 12px -70px;
   max-width: none;
   width: calc(100% + 140px);
   position: relative;
+  /* visible scrollbar — always. macOS's hide-on-idle default is a discoverability trap. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) var(--surface);
 }
+.code-block::-webkit-scrollbar { height: 8px; -webkit-appearance: none; }
+.code-block::-webkit-scrollbar-track { background: var(--surface); }
+.code-block::-webkit-scrollbar-thumb { background: var(--rule); border: 1px solid var(--surface); }
+.code-block::-webkit-scrollbar-thumb:hover { background: var(--ink-3); }
 @media (max-width: 900px) {
-  .code-block { margin: 0 0 8px; width: 100%; }
+  .code-block { margin: 0 0 12px; width: 100%; padding: 20px 16px 14px; font-size: 12px; }
 }
 .code-block::before {
   content: "$  LISTING";
